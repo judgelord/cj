@@ -1,0 +1,1929 @@
+---
+#rmarkdown::render("docs/cj-appendix.Rmd")
+title: "The Climate Justice Movement's Impact in Agency Rulemaking"
+subtitle: "Appendix and Replication Code" 
+author: "Devin Judge-Lord"
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      toc: true
+      toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='../figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+library(modelsummary)
+library(fixest)
+library(tidyverse)
+library(broom)
+library(magrittr)
+library(tidytext)
+library(knitr)
+library(kableExtra)
+library(here)
+
+select <- . %>% dplyr::select()
+
+library(ggplot2); theme_set(theme_bw());
+  options(
+    ggplot2.continuous.color = "plasma",
+    ggplot2.continuous.fill = "plasma"
+  )
+  scale_color_discrete <- function(...){
+    scale_color_viridis_d(..., direction = -1, 
+                          begin = 0, end = .9, option = "plasma")}
+  scale_fill_discrete <- function(...){
+    scale_fill_viridis_d(..., direction = -1, 
+                         begin = 0, end = .9, option = "plasma")}
+  
+  scale_color_continuous <- function(...){
+    scale_color_viridis_c(..., direction = -1, 
+                          option = "plasma")}
+  scale_fill_continuous <- function(...){
+    scale_fill_viridis_c(..., direction = -1, 
+                         option = "plasma")}
+  
+  
+kablebox <- . %>% 
+  head(100) %>% 
+  knitr::kable(digits = 3) %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+# Data
+
+Replication data are available in SQL and Rdata at https://github.com/judgelord/rulemaking 
+
+```{r data, fig.height=11, cache=TRUE}
+# proposed rules 
+load(here::here("data", "cjPR.Rdata"))
+load(here::here("data", "climatePR.Rdata"))
+load(here::here("data", "ejPRnew.Rdata"))
+
+# proposed rules that mention cj or ej + climate
+cjPR <- climatePR %>% filter(id %in% cjPR$id |
+                               id %in% ejPRnew$id)
+
+# final rules
+load(here::here("data", "cjFR.Rdata"))
+load(here::here("data", "climateFR.Rdata"))
+load(here::here("data", "ejFRnew.Rdata"))
+
+cjFR <- climateFR %>% filter(id %in% cjFR$id |
+                               id %in% ejFRnew$id)
+
+# comments 
+load(here::here("data", "climatecomments.Rdata"))
+cj_comments <- climatecomments %>% filter(cj)
+
+# load(here::here("data", "cj_race.Rdata"))
+
+load(here::here("data", "rules_metadata.Rdata"))
+
+# a function to clean raw selected text
+clean_summary <- . %>% 
+  mutate(summary = str_remove_all(highlighted_content,
+               "./em../mark.|.mark..em.") %>% 
+           str_replace_all("\\&hellip;\\&nbsp;"," ") %>% 
+           str_replace_all("[^[A-z][0-9] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
+           str_remove_all("\\(|\\)|\\[|\\]") %>%
+  str_squish() )
+
+# ## Testing regex
+# str_remove_all(cjPRnew$highlighted_content[1],
+#                "./em../mark.|.mark..em.") %>% 
+#            str_replace_all("\\&hellip;\\&nbsp;"," ") %>% 
+#            str_replace_all("[^[A-z][0-9] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
+#            str_remove_all("\\(|\\)|\\[|\\]") %>%
+#   str_squish() 
+
+# summary vars
+cj_comments %<>%
+  mutate(docket_id = str_remove(id, "-[0-9]*$") ) %>% 
+  clean_summary()
+
+cjPR %<>% clean_summary()
+
+cjFR %<>% clean_summary()
+
+rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"),
+                    # drop rules before clinton
+                  !is.na(posted_date),
+                  posted_date > as.Date("1993-01-20"),
+                  # rulemaking dockets only
+                  docket_type == "Rulemaking" ) %>%
+  # one document per docket (drop additional PRs )
+  group_by(document_type, docket_id) %>%
+  slice_max(number_of_comments_received)
+
+
+# make summary vars for main data
+rules %<>% 
+  # # add climate comments and climate unique comment counts #FIXME merge in counts from old data, find if new API has this
+  # left_join(cj_comments %>% 
+  #             group_by(docket_id) %>% 
+  #             summarise(cj_comments = sum(number_of_comments_received) ) ) %>%
+  left_join(cj_comments %>% 
+              count(docket_id, name = "cj_comments_unique") ) %>% 
+  mutate(#cj_comments = replace_na(cj_comments, 0),
+         cj_comments_unique = replace_na(cj_comments_unique, 0) ) %>% 
+  # recode 1 as 0 to reduce colinearity with cj_comment, logical
+  #FIXME make this a new var 
+  mutate(cj_comments_unique = ifelse(cj_comments_unique == 1, 0, cj_comments_unique))
+
+# indicators for Climate Justice in various docket-level variables
+rules %<>% 
+  group_by(docket_id) %>% 
+  mutate(comments = sum(number_of_comments_received)) %>% 
+  ungroup() %>% 
+  mutate(cj_pr = docket_id %in% cjPR$docket_id,
+         cj_comment = docket_id %in% cj_comments$docket_id,
+         cj_fr = docket_id %in% cjFR$docket_id,
+         # indicator for president
+         president = ifelse(posted_date < as.Date("2017-01-17"), "Obama", "Trump"),
+         president = ifelse(posted_date < as.Date("2009-01-20"), "G. W. Bush", president),
+         president = ifelse(posted_date < as.Date("2001-01-20"), "Clinton", president),
+         year = str_sub(posted_date, 1,4),
+         Year = str_sub(posted_date, 3,4),
+         Year = str_c("`", Year),
+         agency = agency_id
+         ) 
+
+rules %<>% dplyr::select(docket_id, 
+                 docket_title, 
+                 # cj_comments = cj_comments_unique, 
+                 cj_comments_unique, 
+                 cj_pr, 
+                 cj_comment, 
+                 cj_fr, 
+                 president, year, 
+                 comments, 
+                 agency, 
+                 document_type,
+                 year,
+                 Year) %>%
+  distinct()
+```
+
+### Documents
+
+
+```{r cj-data-documenttype, fig.height=3}
+# cj-data-documenttype
+# document type over time
+rules %>% 
+  ggplot() + 
+  aes(x = year, fill = document_type) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "Number of Documents",
+       x = "",
+       fill = "") + 
+  scale_fill_viridis_d(option="cividis", begin = .3, end = .7, direction = -1, ) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+```
+
+### Draft Rules
+
+
+```{r cj-data-cjpr, fig.height=3}
+# cj-data-cjpr
+
+# pr over time
+rules %>% 
+  filter(document_type == "Proposed Rule") %>% 
+  mutate(cj_pr = ifelse(cj_pr, "Climate Justice Addressed", "Climate Justice Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = year, fill = cj_pr) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "All Proposed Rules",
+       x = "",
+       fill = "")+ # "Climate Justice Addressed\nin Proposed Rule") + 
+  scale_fill_viridis_d(option="plasma", begin = 0, end = .9, direction = 1) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+
+# cj_pr over time
+cjPR %>% 
+  filter(!is.na(posted_date)) %>% 
+  mutate(year = str_sub(posted_date,1,4)) %>%
+  ggplot() + 
+  aes(x = year) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "Proposed Rules\nAddressing Climate Justice",
+       x = "") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+```
+
+### Final rules
+
+```{r cj-data-cjfr, fig.height=3}
+#cj-data-cjfr
+
+# fr type over time
+rules %>% 
+  filter(document_type == "Rule") %>% 
+  mutate(cj_fr = ifelse(cj_fr, "Climate Justice Addressed", "Climate Justice Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = year, fill = cj_fr) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "All Final Rules",
+       x = "",
+       fill = "" ) +# "Climate Justice Addressed\nin Final Rule") + 
+  scale_fill_viridis_d(option="plasma", begin = 0, end = .9, direction = 1) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+
+# cj_fr over time
+cjFR %>% 
+  filter(!is.na(posted_date)) %>% 
+  mutate(year = str_sub(posted_date,1,4)) %>%
+  ggplot() + 
+  aes(x = year) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "Final Rules\nAddressing Climate Justice",
+       x = "") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+
+
+
+```
+
+Subsets of data:
+
+```{r subsets}
+# SUBSETTING -------------------------------------------
+#TODO sensitivity analysis to inclusion criteria
+
+# filter to agencies that published at least one cj rule 
+rules %<>% 
+  group_by(agency) %>% 
+  mutate(agency_cj_rules = sum(cj_fr),
+         agency_cj_comments = sum(cj_comments_unique),
+         agency_cj_nprms = sum(cj_pr)) %>%
+  ungroup() %>% 
+  filter(agency_cj_rules > 0)# | agency_cj_nprms > 0) #TODO sensitivity analysis
+
+rules %>% distinct(docket_id, cj_pr, cj_fr) %>% count(cj_pr, cj_fr) %>% kablebox()
+
+# All proposed rules
+allPR <- rules %>% 
+  # subset to final rules
+  filter(document_type == "Proposed Rule")
+
+
+# All final rules
+allFR <- rules %>% 
+  # subset to final rules with an NPRM 
+  filter(document_type == "Rule") %>%
+  # direct to final rules
+  mutate(direct = ifelse(docket_id %in% allPR$docket_id, "Draft Rule Published", "Direct to Final Rule"))
+
+cj_comments$number_of_comments_received %<>% replace_na(0) 
+
+cj_comments %>% count(docket_id, number_of_comments_received, sort = T) %>% arrange(-number_of_comments_received) %>% kablebox()
+```
+
+### Agencies that published at least 1 rule addressing Climate Justice
+
+Subsetting to agencies that pubished at least one rule explicitly addressing Climate Justice from 1992 through 2020 yields
+ `r allPR %>% distinct(docket_id, comments) %>% summarize(n = sum(comments)) %>% pull(n)` public comments on
+ `r allFR %>% distinct(docket_id) %>% nrow()` rulemaking dockets from
+`r rules %>% distinct(agency) %>% nrow()` agencies, each publishing at least one rule that explicitly addressed climate justice. `r sum(cj_comments$number_of_comments_received)` comments mentioning Climate Justice, including  `r cj_comments %>% nrow()` unique comments (excluding duplicates) use the phrase "climate justice". 
+
+
+
+```{r cj-data-agencies}
+#cj-data-agencies
+breaks <-  c("`16", 
+             "`00", "`04", "`08", "`20")
+
+allFR %>%
+  filter(year > 2004) %>%
+  mutate(cj_fr = ifelse(cj_fr, "Climate Justice Addressed", "Climate Justice Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = Year, fill = factor(cj_fr, levels = c("Climate Justice Not Addressed", "Climate Justice Addressed"))) +
+  facet_wrap("agency", scales = "free_y") +
+  geom_bar(alpha = .7) +
+  labs(fill = "Climate Justice\nin Final Rule",
+       x = "",
+       y = "")+ 
+  scale_fill_discrete()+#direction = -1) + 
+  scale_x_discrete(breaks = breaks ) 
+```
+
+### Agencies that received at least 100 unique Climate Justice comments
+
+
+```{r cj-data-agencies100}
+# cj-data-agencies100
+
+breaks <-  c("`16", "`12", 
+             "`00", "`04","`08", "`92",  "`96", "`20")
+# agencies that published at least 100 rules with Climate Justice comments
+allFR %>% 
+  filter(agency_cj_comments > 100 | agency_cj_rules > 10 | agency == "FEMA",
+         year > 2004) %>% #distinct(agency, docket_id, agency_cj_comments)
+  mutate(cj_fr = ifelse(cj_fr, "Climate Justice Addressed", "Climate Justice Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = Year, fill = factor(cj_fr, levels = c("Climate Justice Not Addressed", "Climate Justice Addressed"))) +
+  scale_fill_discrete()+#direction = -1) + 
+  facet_wrap("agency", scales = "free_y") +
+  geom_bar(alpha = .7) + 
+  labs(fill = "\"Climate Justice\"\nin Final Rule",
+       y = "Number of Rules") + 
+
+  scale_x_discrete(breaks = breaks ) 
+```
+
+
+
+## Draft Rules by President
+
+```{r cj-pr-president, fig.height=2.5}
+#cj-pr-president
+
+allPR %>% 
+  count(Year, cj_pr, president) %>%
+    mutate(cj_pr = ifelse(cj_pr, "Climate Justice Addressed", "Climate Justice Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = Year, y =n,
+      fill = factor(cj_pr, levels = c("Climate Justice Not Addressed", "Climate Justice Addressed"))) +
+  scale_fill_discrete()+#direction = -1) + 
+  geom_col(alpha = .7, position = "dodge") + 
+  facet_grid(. ~ president, scales = "free") + 
+  labs(x = "Year",
+       y = "Number of Proposed Rules",
+       fill = "Climate\nJustice\nAnalysis") + 
+  theme(panel.grid.major.x = element_blank())
+```
+
+
+## Final Rules by President
+
+
+
+```{r cj_fr-president, fig.height=4.5}
+# cj_fr-president
+
+allFR %>% 
+  count(Year, cj_fr, direct, president) %>%
+    mutate(cj_fr = ifelse(cj_fr, "Climate Justice Addressed", "Climate Justice Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = Year, y = n,
+      fill = factor(cj_fr, levels = c("Climate Justice Not Addressed", "Climate Justice Addressed"))) +
+  scale_fill_discrete()+#direction = -1) + 
+  geom_col(alpha = .7, position = "dodge") + 
+  facet_grid(direct ~ president, scales = "free") + 
+  labs(x = "Year",
+       y = "Number of Final Rules",
+       fill = "Climate\nJustice\nAnalysis") + 
+  theme(panel.grid.major.x = element_blank())
+
+allFR %>% 
+  filter(direct == "Draft Rule Published") %>% 
+  mutate(cj_pr = ifelse(cj_pr, "Climate Justice in\nDraft & Final Rule", "Climate Justice\nOnly in Final Rule"),
+         cj_pr = ifelse(cj_fr, cj_pr, "No Climate\nJustice Analysis")) %>% 
+  count(Year, cj_pr, cj_comment, president) %>% 
+  mutate(cj_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice")) %>% 
+  ggplot() + 
+  aes(x = Year, y = n,
+      fill = factor(cj_comment, levels = c("No Comments Address\nClimate Justice", "Comments Address\nClimate Justice"))) +
+  scale_fill_discrete()+#direction = -1) + 
+  geom_col(alpha = .7) + 
+  facet_grid(cj_pr ~ president, scales = "free") + 
+  labs(x = "",
+       y = "Number of Rules",
+       fill = "Comments Raised\nClimate\nJustice Concerns") + 
+  theme(panel.grid.major.x = element_blank())
+```
+
+---
+
+## Comments 
+
+### by President
+
+
+
+```{r cj-comments,fig.width=7, fig.height = 4}
+# cj_comments
+breaks <- c(1996, 2000, 2004, 2008, 2012, 2016, 2020)
+
+allFR %>% 
+  filter(direct == "Draft Rule Published") %>% 
+  mutate(cj_pr = ifelse(cj_pr, "Climate Justice in\nDraft & Final Rule", "Climate Justice\nOnly in Final Rule"),
+         cj_pr = ifelse(cj_fr, cj_pr, "No Climate\nJustice Analysis")) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice")) %>% 
+  ggplot() + 
+  aes(x = year, color = CJ_comment, shape = CJ_comment) + 
+  # plot climate comments on top
+  geom_jitter(alpha = .3, 
+              aes(y = ifelse(cj_comment, NA, comments) ) ) + 
+  geom_jitter(alpha = .3,
+              aes(y = ifelse(cj_comment, comments, NA) ) ) +
+  #geom_jitter(alpha = .3) + 
+  facet_grid(cj_pr ~ president, scales = "free_x") + 
+  scale_y_log10(labels = scales::comma)  +
+  #scale_x_date(date_labels = "%y") + 
+  labs(x = "",
+       y = "Total Number of Comments per Rule (log scale)",
+       color = "Comments Raised\nClimate\nJustice Concerns",
+       shape = "Comments Raised\nClimate\nJustice Concerns") +
+  scale_x_discrete(breaks = breaks) + 
+  scale_color_viridis_d(begin = 0, end = .9, option = "plasma") 
+```
+
+# By Organization 
+
+```{r cj-orgs}
+#cj-orgs
+source(here::here("code", "clean_orgs.R") %>% str_replace("cj", "dissertation"))
+
+str_dct <- function(string, pattern) {
+  str_detect(string, regex(pattern, ignore_case = TRUE))
+}
+#functions for case sensitive string manipulation
+str_rm_all <- function(string, pattern) {
+  str_remove_all(string, regex(pattern, ignore_case = TRUE))
+}
+
+
+cj_orgs <- cj_comments %>% 
+  drop_na(organization) %>% 
+  filter(!organization %in% c("NA")) %>% 
+   mutate(org_name = organization %>% clean_orgs()) %>% 
+  group_by(org_name) %>% 
+  mutate(Dockets = docket_id %>% unique() %>% length()) %>% 
+  group_by(org_name, Dockets) %>% 
+  summarise(unique = n(),
+            total = sum(number_of_comments_received)) %>% 
+  arrange(-total) 
+
+
+# total from top 100 cj_orgs
+cj_orgs %<>% 
+  filter(!str_dct(org_name, "unknown|404error|broken link|anonymous|knowwho")) 
+
+
+# FORMAT FOR PRESENTATION 
+cj_orgs %<>% mutate(org_name = ifelse(nchar(org_name)<10, str_to_upper(org_name), org_name) )
+
+cj_orgs_summary <- cj_orgs %>% 
+  ungroup() %>%
+  filter(!str_dct(org_name, "^NA$|unknown|individuals|n/a|^N$")) %>%
+  arrange(-Dockets)   %>% 
+  rename(Organization = org_name, 
+         `Unique Climate Justice Comments` = unique,
+         `Total Climate Justice Comments` = total) 
+
+# need to do better
+nrow(cj_orgs_summary)
+cj_orgs_summary$`Total Climate Justice Comments` %>% sum()
+
+
+save(cj_orgs_summary, file =  here("data", "cj_orgs_summary.Rdata"))
+
+cj_orgs_summary %>% 
+  kablebox() #%>% kable3(caption = "Organizations Mobilizing the Most Public Comments 2005-2020")
+
+
+cj_orgs_summary %>% 
+  arrange(-`Total Climate Justice Comments`) %>% 
+  kablebox() 
+
+cj_orgs_FR <- cj_comments %>%
+  mutate(docket_id =str_remove(id, "-[0-9]*$")) %>%
+  #select(docket_id)
+  filter(docket_id %in% allFR$docket_id) %>%
+  drop_na(organization) %>%
+  filter(!organization %in% c("NA")) %>%
+  group_by(organization, docket_id) %>%
+  #add_count(docket_id) %>% #TODO
+  summarise(unique = n(),
+            total = sum(number_of_comments_received)) %>%
+  ungroup() %>% 
+  arrange(-total)
+
+# per docket 
+cj_orgs_FR %>%
+  kablebox()
+
+
+# number of dockets 
+cj_orgs_FR %>%
+  count(organization, name = "dockets on which org raised Climate Justice", sort = T) %>% 
+  kablebox()
+
+
+# 
+# cj_orgs
+
+```
+
+---
+
+# Proposed rules that **did not** address Climate
+
+```{r}
+# Final Rules that where cj was not mentioned in the NPRM
+cjFR_PR <- allFR %>% 
+  filter(docket_id %in% allPR$docket_id, # there is an NPRM
+         !cj_pr) # cj is not in it
+```
+
+Percent where the final rule did address Climate Justice
+
+
+```{r cj-PR-winrate, fig.width=6, fig.height=2}
+#cj-PR-winrate 
+
+winrate <- cjFR_PR %>% 
+  count(cj_comment, cj_fr) %>% 
+  group_by(cj_comment) %>% #FIXME make nice table with percents
+  spread(cj_fr, n) %>% 
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+cjFR_PR %>% 
+  count(cj_comment, cj_fr) %>% 
+  left_join(winrate) %>%
+  group_by(cj_comment) %>% 
+  mutate(mean = mean(c(`TRUE`, `FALSE`)),
+         CJ_fr = cj_fr,#ifelse(cj_fr, "Climate Justice Addressed", "Climate Justice Not Addressed"),
+        CJ_comment = ifelse(cj_comment, "Climate Justice\nRaised by Commenters", "Climate Justice Not\nRaised by Commenters")) %>% 
+  ggplot() + 
+  aes(x = CJ_comment, 
+      y = n, 
+      fill = CJ_fr, 
+      label = ifelse(cj_fr == cj_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(y = mean)) + 
+  facet_wrap("CJ_comment", scales = "free") + 
+  labs(fill = "Climate Justice\nin Final Rule",
+       y = "Proposed Rules") + 
+  #scale_fill_viridis_d(option="plasma", begin = 0, end = .9, direction = -1) +
+  theme_void() +
+  theme(axis.text.y = element_text(),
+        axis.title.y = element_text(angle = 90),
+        panel.grid.major.y = element_line(color = "grey"))
+```
+
+
+## By president
+
+
+```{r cj-PR-winrate-president, fig.height=3, fig.width=6}
+#cj-PR-winrate-president
+
+winrate <- cjFR_PR %>% 
+  count(cj_comment, cj_fr, president) %>% 
+  group_by(cj_comment) %>% #FIXME make nice table with percents
+  spread(cj_fr, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+cjFR_PR %>% 
+  count(cj_comment, cj_fr, president) %>% 
+  left_join(winrate) %>%
+  group_by(cj_fr) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Climate Justice\nComments", "No Climate Justice\nComments"),
+         CJ_fr = cj_fr# ifelse(cj_fr, "Climate Justice Addressed", "Climate Justice Not Addressed") 
+         ) %>% 
+  ggplot() + 
+  aes(x = n, y = CJ_comment, 
+      fill = CJ_fr, 
+      label = ifelse(cj_fr== cj_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0) + 
+  facet_wrap("president", scales = "free")+ 
+  labs(fill = "Climate Justice\nin Final Rule",
+       x = "Proposed Rules that Did Not Address\nClimate Justice",
+       y = "",
+       title = "Rates of Rule Change by President") + 
+  #scale_fill_viridis_d(option="plasma", begin = 0, end = .9, direction = 1) + 
+  #theme_void() +
+  theme(axis.text.x = element_text(angle = 30),
+        panel.grid.major.y = element_blank())
+
+# 
+# cjFR_PR %>% 
+#   ggplot() + 
+#   aes(x = log(cj_comments_unique+1), y = log(comments+1)) + 
+#   geom_jitter() + 
+#   geom_smooth()
+```
+
+
+## Model 
+
+### With president dummies
+
+```{r cj-m-PR}
+# cj-m-PR
+
+m_PR <- glm(cj_fr ~ cj_comment*log(comments+1) +
+              log(cj_comments_unique+1) +
+              president,
+           data = cjFR_PR, 
+             family=binomial(link="logit"))
+
+equatiomatic::extract_eq(m_PR)
+
+modelsummary(m_PR, stars = T)
+```
+
+### With president fixed effects
+
+```{r cj-m-PRFE}
+# cj-m-PR
+m_PRFE <- feglm(cj_fr ~ cj_comment*log(comments+1) +
+              log(cj_comments_unique+1) | president,
+           data = cjFR_PR, 
+             family=binomial(link="logit"))
+
+
+modelsummary(m_PRFE, stars = T)
+```
+
+### Predicted Probabilities by President
+
+
+With the median number of comments on Proposed Rules that did not address Climate, `r median(cjFR_PR$comments)` comments:
+
+```{r cj-m-PR-president-median, fig.width=5.5, fig.height=3.5}
+# cj-m-PR-president-median
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFR_PR %>% 
+  tidyr::expand(cj_comment,
+         #cj_comments = median(cj_comments) %>% round(),
+         cj_comments_unique = median(cj_comments_unique) %>% round(),
+         comments = #c(min(comments),
+                      median(comments) %>% round(),
+                      #max(comments)),
+         president)
+
+predicted <- augment(m_PR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(cjFR_PR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>% 
+           str_c(", N = ", n_cj_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = CJ_comment, y = .fitted, shape = CJ_comment, color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+  facet_wrap("president", ncol = 1) +
+  labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule', 
+       x = "",
+       color = "",#color = '"Climate Justice"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank())+
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+  ylim(0,1) 
+```
+
+---
+
+With the **mean** number of comments on Proposed Rules that did not address Climate, `r mean(cjFR_PR$comments) %>% round()` comments:
+
+```{r cj-m-PR-president-mean, fig.width=5, fig.height=3.5}
+# cj-m-PR-president-mean
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFR_PR %>% 
+  tidyr::expand(cj_comment,
+         #cj_comments = median(cj_comments) %>% round(),
+         cj_comments_unique = mean(cj_comments_unique) %>% round(),
+         comments = #c(min(comments),
+                      mean(comments) %>% round(),
+                      #max(comments)),
+         president)
+
+predicted <- augment(m_PR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(cjFR_PR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = CJ_comment, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+  facet_wrap("president", ncol = 1) +
+  labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule', 
+       x = "",
+       color = "",#color = '"Climate Justice"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank())+  
+  scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+  ylim(0,1)
+```
+
+---
+
+## By number of comments
+
+```{r cj-m-PR-comments, fig.width=6, fig.height=2.5}
+# cj-m-PR-comments
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFR_PR %>% 
+  tidyr::expand(comments =  c(1, 10,100,1000,10000),
+         cj_comment,
+         cj_comments_unique = median(cj_comments_unique) %>% round(),
+         president = "Obama")
+
+predicted <- augment(m_PR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(cjFR_PR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+
+# As a plot
+predicted %>%
+  filter(comments<10001) %>% 
+  ggplot() + 
+  aes(x = factor(comments), 
+      y = .fitted, 
+      shape = CJ_comment,
+      color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+#facet_wrap("cj_comment", ncol = 1) +
+  labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule', 
+       x = "Number of Comments",
+       color = "",#color = '"Climate Justice"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) 
+```
+
+---
+
+## By Agency 
+
+The percent of rules where Climate was added
+
+```{r cj-PR-winrate-agency, fig.height=3, fig.width=6}
+#cj-PR-winrate-agency
+
+winrate <- cjFR_PR %>% 
+  count(cj_comment, cj_fr, agency) %>% 
+  group_by(cj_comment) %>% #FIXME make nice table with percents
+  spread(cj_fr, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 )) %>% 
+  ungroup() %>% 
+  arrange(agency)
+
+winrate %>% filter(cj_comment == F) %>% kablebox()
+
+winrate %>% filter(cj_comment == T) %>% kablebox()
+
+# winrate 
+cjFR_PR %>% count(agency, cj_comment, cj_fr)  %>% 
+  add_count(agency) %>% 
+  filter(nn > 3) %>% 
+  #filter(agency == "EPA") %>%
+  left_join(winrate) %>%
+  group_by(cj_fr) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Climate Justice\nComments", "No Climate Justice\nComments") ) %>% 
+  ggplot() + 
+  aes(x = n, y = CJ_comment, 
+      fill = cj_fr, 
+      label = ifelse(cj_fr== cj_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0) + 
+  facet_wrap("agency", scales = "free")+ 
+  labs(fill = "Climate Justice\nin Final Rule",
+       x = "Proposed Rules that Did Not Address\nClimate Justice",
+       y = "",
+       title = "Rates of Rule Change by Agency") + 
+  theme(axis.ticks = element_blank(),
+        axis.text.x = element_text(angle = 30),
+        panel.grid.major.y = element_blank())
+```
+
+### Models
+
+```{r}
+m_PR_agency <- glm(cj_fr ~ cj_comment*log(comments+1) + 
+                     log(cj_comments_unique+1) + #TODO remove or transform 
+                     president + 
+                     agency,
+           data = cjFR_PR, 
+             family=binomial(link="logit"))
+
+tidy(m_PR_agency) %>% kablebox()
+```
+
+### Predicted Probabilies by Agency
+```{r cj-m-PR-agency, fig.height=9}
+# cj-m-PR-agency
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFR_PR %>%
+  tidyr::expand(cj_comment,
+         president = "Obama",
+         cj_comments_unique = median(comments) %>% round(),
+         comments = median(comments) %>% round(),
+         agency)
+
+predicted <- broom::augment(m_PR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(cjFR_PR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+# calculate difference in probabilities
+predicted %<>% 
+  group_by(agency) %>% 
+  mutate(diff = abs(sum(.fitted) - .fitted - .fitted)*100) %>% 
+  mutate(diff = round(diff, 0) %>% str_pad(2, side = "left", pad = "0")) %>% 
+  mutate(Agency = str_c(diff, "% increase at ", agency)) %>% arrange(Agency)
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+  
+#facet_wrap("agency", ncol = 1, scales = "free") +
+  labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule', 
+       x = "",
+       color = "",#color = '"Climate Justice"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted Change in Final Rules") + 
+  scale_y_continuous(breaks = c(0, .5,1)) +
+  theme(panel.grid.major.y = element_blank(),
+        panel.border = element_blank()) +
+  ylim(0,1) 
+```
+
+Agencies with at least 300 comments on proposed rules that did not mention climate justice (i.e., agencies where at least some of the rules in this dataset saw comments) and at least 3 rules where comments raised Climate Justice concerns (i.e., agencies where Climate is somewhat salient). 
+
+```{r cj-m-PR-agency-top, fig.width=7}
+# cj-m-PR-agency-top
+
+cjFR_PR %>% group_by(agency) %>% count(agency, agency_cj_comments,sum(comments) )  %>%   kablebox()
+
+
+top <- cjFR_PR %>% 
+  group_by(agency) %>% 
+  filter(sum(comments) >=300,
+         agency_cj_comments >=3) %>% 
+    ungroup() %>% 
+    .$agency %>% 
+    unique()
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  filter(agency %in% top) %>% 
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+  scale_y_continuous(breaks = c(0, .5,1)) +
+labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule',
+     x = "",
+     color = "",#color = '"Climate Justice"\nRaised by Comments', 
+     shape = "",#shape = "Climate Justice"\nRaised by Comments', 
+     title = "Predicted change in Final Rules") + 
+  theme(panel.grid.major.y = element_blank(),
+        panel.border  = element_blank())
+```
+
+
+A more selective subset: Agencies that have at least 500 comments on proposed rules that did not mention climate justice (i.e., agencies where at least some of the rules in this dataset saw more than a few comments) and at least 50 rules where comments raised Climate Justice concerns (i.e., agencies where Climate is somewhat salient). 
+
+```{r cj-m-PR-agency-toptop, fig.height=3, , fig.width=6}
+# cj-m-PR-agency-toptop
+
+# slightly more selective, requiring 100 comments
+top <- cjFR_PR %>% 
+  group_by(agency) %>% 
+  filter(sum(comments) >=500,
+         agency_cj_comments >=50) %>% 
+    ungroup() %>% 
+    .$agency %>% 
+    unique()
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  filter(agency %in% top) %>% 
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  scale_y_continuous(breaks = c(0, .5,1)) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule', 
+       x = "",
+       color = "",#color = '"Climate Justice"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  theme(panel.grid.major.y = element_blank(),
+        panel.border = element_blank())
+```
+
+## with Agency Fixed Effects 
+
+(as well as President FE)
+```{r cj-m-PR-comments-agencyFE, fig.width=6, fig.height=2.5}
+# cj-m-PR-comments-agencyFE
+
+# agencies with variation on DV
+# cjFR_PR %<>% group_by(agency) %>% mutate(dv_var = cj_fr %>% unique() %>% length()) %>% ungroup() %>% filter(dv_var > 1)
+
+m_PR_agencyFE <- feglm (cj_fr ~ cj_comment*log(comments+1) + 
+                          log(cj_comments_unique+1) 
+                        | president + agency, se = "twoway",
+           data = cjFR_PR, 
+             family=binomial(link="logit"))
+
+modelsummary(m_PR_agencyFE, stars = T)
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFR_PR %>% 
+  tidyr::expand(comments = c(1, 10,100,1000,10000),
+         cj_comment,
+         cj_comments_unique = median(cj_comments_unique) %>% round(),
+         president = "Obama",
+         agency = "EPA") 
+
+predicted <- broom::augment(m_PR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(cjFR_PR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+# As a plot
+predicted %>%
+  filter(comments<10001) %>% 
+  ggplot() + 
+  aes(x = factor(comments), 
+      y = .fitted, 
+      shape = CJ_comment,
+      color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  #scale_y_continuous(breaks = c(0, .5,1)) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  #facet_wrap("cj_comment", ncol = 1) +
+  labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule', 
+       x = "Number of Comments",
+       color = "",#color = '"Climate Justice"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) 
+```
+
+```{r cj-m-PR-cj-comments-agencyFE, fig.width=6, fig.height=2.5}
+# cj-m-PR-cj-comments-agencyFE
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFR_PR %>% 
+  tidyr::expand(cj_comments_unique = c(1, 10,100,1000, 10000),
+         cj_comment = TRUE,
+         comments = median(comments) %>% round(),
+         president = "Obama",
+         agency = "EPA") %>% 
+  # set all comments to be Climate comments (we can't have one overall comment and 100 cj comments)
+  mutate(comments = cj_comments_unique)
+
+predicted <- broom::augment(m_PR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(cjFR_PR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+# As a plot
+predicted %>%
+  ggplot() + 
+  aes(x = factor(cj_comments_unique), 
+      y = .fitted, 
+      shape = CJ_comment,
+      color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  #scale_y_continuous(breaks = c(0, .5,1)) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  #facet_wrap("cj_comment", ncol = 1) +
+  labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule', 
+       x = "Number of Unique Comments\nRaising Climate Justice",
+       color = "",#color = '"Climate Justice"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) 
+```
+
+---
+
+
+
+## Example dockets
+
+TODO 
+
+
+
+```{r}
+
+top_dockets <- cjFR_PR %>%
+  filter(agency %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" ),
+         cj_fr, # cj added 
+         cj_comment) %>% # with cj comments  
+  dplyr::select(docket_id, docket_title) %>% 
+  distinct() %>% 
+  pull(docket_id)
+
+rules %>% 
+  filter(docket_id %in% top_dockets) %>% 
+  distinct(docket_id, docket_title, comments, cj_comments_unique) %>%  
+  distinct() %>% 
+  arrange(rev(docket_id)) %>% 
+  kablebox()
+
+
+
+# final rule text where the pr did not address cj
+cjFR %>% 
+  filter(docket_id %in% cjFR_PR$docket_id,
+         docket_id %in% cj_comments$docket_id) %>% # Climate Justice Not in PR
+  distinct(docket_id, title, summary) %>% 
+  arrange(desc(docket_id)) %>% 
+  kablebox()
+```
+
+## Example comments
+
+Excerpts from comments mentioning "climate justice" on proposed rules that did not address climate justice: 
+```{r}
+cj_comments %>% 
+  filter(docket_id %in% cjFR_PR$docket_id) %>% 
+  distinct(docket_id, title, summary) %>%
+  group_by(docket_id) %>%
+  slice_sample(n = 2) %>% kablebox()
+```
+
+---
+
+
+# Proposed rules that **did** address Climate
+
+```{r cj-data-cjPR}
+# cj-data-cjPR
+
+# Final Rules that where climate was mentioned in the NPRM
+cjFRcjPR <- allFR %>% 
+  filter(#docket_id %in% allPR$docket_id,
+         cj_fr,
+         cj_pr)
+
+# final rule text where the pr did address climate
+change <- cjFR %>% dplyr::select(docket_id, final = summary) %>% 
+  distinct() %>% 
+  left_join(cjPR %>% 
+              dplyr::select(docket_id, draft = summary) %>% distinct() ) %>% 
+  filter(!is.na(draft))
+
+# indicators 
+
+# is there a comment mentioning climate
+change %<>% mutate(cj_comment = docket_id %in% cj_comments$docket_id)
+
+# did the final rule change
+change %<>% mutate(change = !str_detect(draft, fixed(final, ignore_case = T) ))
+  
+
+change %>% 
+  dplyr::select(docket_id, draft, final, cj_comment, change) %>% kablebox()
+
+change %>% 
+  dplyr::select(docket_id, draft, final, change) %>% kablebox()
+
+
+
+# logical
+change01 <- change %>% 
+  distinct(docket_id, change) %>%
+  # dedupe
+  group_by(docket_id) %>% 
+  slice_max(change) %>% #TODO sensitivity analysis 
+  ungroup() 
+
+cjFRcjPR %<>% left_join(change01) 
+
+cjFRcjPR %>% count(change, cj_comment) %>% kablebox()
+
+cjFRcjPR %<>% filter(!is.na(change)) #TODO investigate NAs
+```
+
+Percent where the final rule did change how it addressed Climate
+
+```{r cj_cjPR-winrate, fig.width=6, fig.height=2}
+#cj_cjPR-winrate
+
+winrate <- cjFRcjPR %>% 
+  count(cj_comment, change) %>% 
+  group_by(cj_comment) %>% #FIXME make nice table with percents
+  spread(change, n) %>% 
+  mutate(percent = round(`TRUE`/(`FALSE`+`TRUE`)*100 ))
+
+winrate %>% kablebox()
+
+cjFRcjPR %>% 
+  count(cj_comment, change) %>% 
+  left_join(winrate) %>%
+  group_by(cj_comment) %>% 
+  mutate(mean = mean(c(`TRUE`, `FALSE`)),
+        CJ_comment = ifelse(cj_comment, "Climate Justice\nRaised by Commenters", "Climate Justice Not\nRaised by Commenters")) %>% 
+  ggplot() + 
+  aes(x = CJ_comment, 
+      y = n, 
+      fill = change, 
+      label = ifelse(change == cj_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(y = mean)) + 
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+facet_wrap("CJ_comment", scales = "free") + 
+  labs(fill = "Climate Justice\nText Changed\nin Final Rule",
+       y = "Proposed Rules") + 
+  theme_void() +
+  theme(axis.text.y = element_text(),
+        axis.title.y = element_text(angle = 90),
+        panel.grid.major.y = element_line(color = "grey"))
+```
+
+## Model 
+
+### with president dummies
+```{r cj-mcjPR}
+#cj-mcjPR
+
+mcjPR <- glm(change ~ cj_comment*log(comments +1) +
+                log(cj_comments_unique+1) +
+              president,
+           data = cjFRcjPR, 
+             family=binomial(link="logit"))
+
+modelsummary(mcjPR, stars = T)
+```
+
+
+### with president fixed effects
+```{r cj-mcjPRFE}
+#cj-mcjPRFE
+
+mcjPRFE <- feglm(change ~ cj_comment*log(comments +1) +
+                log(cj_comments_unique+1) | president,
+           data = cjFRcjPR, 
+             family=binomial(link="logit"))
+
+modelsummary(mcjPRFE, stars = TRUE)
+```
+
+## By president
+
+```{r cj_cjPR-winrate-president, fig.height=3, fig.width=6}
+# cj_cjPR-winrate-president-1
+
+winrate <- cjFRcjPR %>% 
+  count(cj_comment, change, president) %>% 
+  group_by(cj_comment) %>% #FIXME make nice table with percents
+  spread(change, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+cjFRcjPR %>% 
+  count(cj_comment, change, president) %>% 
+  left_join(winrate) %>%
+  group_by(change) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Climate Justice\nComments", "No Climate Justice\nComments") ) %>% 
+  ggplot() + 
+  aes(x = n, y = CJ_comment, 
+      fill = change, 
+      label = ifelse(change== cj_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0) + 
+  facet_wrap("president", scales = "free")+ 
+  labs(fill = "Climate Justice\nText Changed\nin Final Rule",
+       y = "",
+       x = "Proposed Rules that Did Address\nClimate Justice") + 
+  theme(axis.ticks = element_blank(),
+        panel.grid.major.y = element_blank())
+```
+
+---
+
+### Predicted Probabilities by President
+
+With the median number of comments, `r median(cjFRcjPR$comments)`
+
+```{r cj-mcjPR-president-median,fig.width=5.5, fig.height=3.5}
+#cj-mcjPR-president-median
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFRcjPR %>% 
+  tidyr::expand(cj_comment,
+         #cj_comments = median(cj_comments) %>% round(),
+         cj_comments_unique = median(cj_comments_unique) %>% round(),
+         comments = #c(min(comments),
+                      median(comments) %>% round(),
+                      #max(comments)),
+         president)
+
+predicted <- augment(mcjPR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(cjFRcjPR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = CJ_comment, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  facet_wrap("president", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Justice"', 
+       x = "",
+       color = "",#color = "Climate Justice"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank())+
+  ylim(0,1) 
+```
+
+---
+
+With the mean number of comments, `r mean(cjFRcjPR$comments) %>% round() %>% as.integer()`
+
+```{r cj-mcjPR-president-mean,fig.width=5.5, fig.height=3.5}
+#cj-mcjPR-president-mean
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFRcjPR %>% 
+  tidyr::expand(cj_comment,
+         #cj_comments = median(cj_comments) %>% round(),
+         cj_comments_unique = mean(cj_comments_unique) %>% round(),
+         comments = #c(min(comments),
+                      mean(comments) %>% round(),
+                      #max(comments)),
+         president)
+
+predicted <- augment(mcjPR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(cjFRcjPR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = CJ_comment, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  facet_wrap("president", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Justice"', 
+       x = "",
+       color = "",#color = '"Climate Justice"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted Change in Final Rules") + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank())+
+  ylim(0,1) 
+```
+
+---
+
+## By number of comments
+
+
+
+Change in Climate section of the final rule by number of comments
+
+Percent of rules that change when there are more or less than 10 comments.
+
+```{r cj_cjPR-winrate-comments, fig.height=1.5, fig.width=5.5}
+#cj_cjPR-winrate-comments
+
+winrate <- cjFRcjPR %>% 
+  mutate(comments10 = comments > 9) %>% 
+  count(change, comments10) %>% 
+  group_by(comments10) %>% #FIXME make nice table with percents
+  spread(change, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+cjFRcjPR %>% 
+  mutate(comments10 = comments > 9) %>% 
+  count(change, comments10) %>% 
+  left_join(winrate) %>%
+  mutate(comments = ifelse(comments10, "10 or more comments", "Fewer than 10 comments") ) %>% 
+  ggplot() + 
+  aes(x = n, y = comments, 
+      fill = change, 
+      label = percent %>% str_c("%")  ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0, check_overlap = T) + 
+  #facet_wrap("president", scales = "free")+ 
+  labs(fill = "Climate Justice\nText Changed\nin Final Rule",
+       x = "Proposed Rules that Did Address\nClimate Justice",
+       y = "")
+```
+
+### Predicted Probabilities by Number of Comments
+
+Estimates across numbers of comments received.
+
+```{r cj-mcjPR-comments, fig.height = 2.5, fig.width=6}
+#cj-mcjPR-comments
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFRcjPR %>% 
+  tidyr::expand(comments = c(1,10,100,1000,10000) ,
+         cj_comment,
+         cj_comments_unique = median(cj_comments_unique),
+         president = "Obama")
+
+predicted <- augment(mcjPR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(cjFRcjPR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = factor(comments), y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  #facet_wrap("cj_comment", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Justice"', 
+       x = "Number of Comments",
+       color = "",#color = '"Climate Justice"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) +
+  ylim(0,1) 
+```
+
+---
+
+## By Agency 
+
+```{r cj_cjPR-winrate-agency, fig.width=6}
+#cj_cjPR-winrate-agency
+
+winrate <- cjFRcjPR %>% 
+  count(cj_comment, change, agency) %>% 
+  group_by(cj_comment) %>% #FIXME make nice table with percents
+  spread(change, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+# winrate 
+cjFRcjPR %>% count(agency, cj_comment, change)  %>% 
+  add_count(agency) %>% 
+  filter(nn > 2) %>% 
+  #filter(agency == "EPA") %>%
+  left_join(winrate) %>%
+  group_by(change) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Climate Justice\nComments", "No Climate Justice\nComments") ) %>% 
+  ggplot() + 
+  aes(x = n, y = CJ_comment, 
+      fill = change, 
+      label = ifelse(change== cj_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0) + 
+  facet_wrap("agency", scales = "free", ncol = 2)+ 
+  labs(fill = "Climate Justice\nText Changed\nin Final Rule",
+       x = "Proposed Rules that Did Address\nClimate Justice", 
+       y = "") + 
+  theme(axis.ticks.y = element_blank(),
+        axis.text.x = element_text(angle = 30),
+        panel.grid.major.y = element_blank())
+```
+
+### Models 
+```{r}
+# interaction + agency dummies
+mcjPR_agency <- glm(change ~ cj_comment*log(comments+1) + 
+                      log(cj_comments_unique+1) + #TODO this is colinear with above two, estimate nPR models
+                      president +
+                      agency,
+                    data = cjFRcjPR, 
+                    family=binomial(link="logit"))
+
+
+tidy(mcjPR_agency) %>% kablebox()
+```
+
+### Predicted Probabilities by Agency
+
+```{r cj-mcjPR-agency}
+# cj-mcjPR-agency
+
+mcjPR_agency <- glm(change ~ cj_comment*log(comments+1) + 
+                      log(cj_comments_unique+1) +
+                      president +
+                      agency,
+                    data = cjFRcjPR, 
+                    family=binomial(link="logit"))
+
+tidy(mcjPR_agency) %>% kablebox()
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFRcjPR %>%
+  tidyr::expand(cj_comment,
+         cj_comments_unique = median(comments) %>% round(),
+         comments = median(comments) %>% round(),
+         president = "Obama",
+         agency)
+
+predicted <- augment(mcjPR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) 
+
+# calculate difference in probabilities
+predicted %<>% 
+  group_by(agency) %>% 
+  mutate(diff = abs(sum(.fitted) - .fitted - .fitted)*100) %>% 
+  mutate(diff = round(diff, 0) %>% str_pad(2, side = "left", pad = "0")) %>% 
+  left_join(cjFRcjPR %>% count(agency, name = "n_agency")) %>% 
+  left_join( cjFRcjPR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(Agency = str_c(diff, "% increase at ", agency, ", N = ", n_agency),
+         CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  #facet_wrap("agency", ncol = 1, scales = "free") +
+  labs(y = 'Probability of Change in How a Rule Addresses "Climate Justice"', 
+       x = "",
+       color = "",#color = "Climate Justice"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted change in Final Rules")  + 
+  scale_y_continuous(breaks = c(0, .5,1)) +
+  theme(panel.grid.major.y = element_blank(),
+        panel.border = element_blank()) 
+```
+
+Agencies that have at least 300 comments on proposed rules that did not mention climate justice (i.e., agencies where at least some of the rules in this dataset saw comments) and at least 3 rules where comments raised Climate Justice concerns (i.e., agencies where Climate Justice is somewhat salient). 
+
+```{r cj-mcjPR-agency-top}
+#cj-mcjPR-agency-top
+
+cjFRcjPR %>% 
+  group_by(agency) %>% 
+  count(agency, agency_cj_comments,sum(comments) )  %>%   
+  kablebox()
+
+
+top <- cjFRcjPR %>% 
+  group_by(agency) %>% 
+  filter(sum(comments) >=300,
+         agency_cj_comments >=3) %>% 
+    ungroup() %>% 
+    .$agency %>% 
+    unique()
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  filter(agency %in% top) %>% 
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  labs(y = 'Probability of Change in How a Rule Addresses "Climate Justice"', 
+       x = "",
+       color = "",#color = '"Climate Justice"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  scale_y_continuous(breaks = c(0,.5,1)) +
+  theme(panel.border = element_blank(),
+        panel.grid.major.y = element_blank())
+```
+
+
+A more selective subset: Agencies that have at least 500 comments on proposed rules that did not mention climate justice (i.e., agencies where at least some of the rules in this dataset saw more than a few comments) and at least 50 rules where comments raised Climate Justice concerns (i.e., agencies where Climate Justice is somewhat salient). 
+
+```{r cj-mcjPR-agency-toptop, fig.height=3}
+#cj-mcjPR-agency-toptop
+
+# slightly more selective, requiring 100 comments
+top <- cjFRcjPR %>% 
+  group_by(agency) %>% 
+  filter(sum(comments) >=500,
+         agency_cj_comments >=50) %>% 
+    ungroup() %>% 
+    .$agency %>% 
+    unique()
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  filter(agency %in% top) %>% 
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = CJ_comment,color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .6)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  labs(y = 'Probability of Change in How a Rule Addresses "Climate Justice"', 
+       x = "",
+       color = "",#color = '"Climate Justice"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  scale_y_continuous(breaks = c(0,.5,1)) +
+  theme(panel.border = element_blank(),
+        panel.grid.major.y = element_blank())
+```
+
+
+## with Agency Fixed Effects 
+
+(as well as president FE)
+
+```{r cj-mcjPR-comments-agencyFE, fig.width=6, fig.height=2.5}
+#cj-mcjPR-comments-agencyFE
+
+mcjPR_agencyFE <- feglm (change ~ cj_comment*log(comments+1) + log(cj_comments_unique+1) 
+                     |  agency,
+           data = cjFRcjPR, 
+             family=binomial(link="logit"))
+
+modelsummary(mcjPR_agencyFE, stars = T)
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFRcjPR %>% 
+  tidyr::expand(comments =  c(1, 10,100,1000,10000),
+         cj_comment,
+         cj_comments_unique = median(cj_comments_unique) %>% round(),
+         president = "Obama",
+         agency = "EPA")
+
+predicted <- augment(mcjPR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(cjFRcjPR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+
+# As a plot
+predicted %>%
+  filter(comments<10001) %>% 
+  ggplot() + 
+  aes(x = factor(comments), 
+      y = .fitted, 
+      shape = CJ_comment,
+      color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  #facet_wrap("cj_comment", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Justice"', 
+       x = "Number of Comments",
+       color = "",#color = '"Climate Justice"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) +
+  ylim(0,1) 
+```
+
+
+```{r cj-mcjPR-cj-comments-agencyFE, fig.width=6, fig.height=2.5}
+#cj-mcjPR-comments-agencyFE
+
+# A data frame of values at which to estimate probabilities:
+values <- cjFRcjPR %>% 
+  tidyr::expand(cj_comments_unique =  c(1, 10,100,1000,10000),
+         cj_comment = TRUE,
+         comments = median(comments) %>% round(),
+         president = "Obama",
+         agency = "EPA") %>% 
+  mutate(comments = cj_comments_unique)
+
+predicted <- augment(mcjPR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(cjFRcjPR %>% count(cj_comment, name = "n_cj_comment") ) %>% 
+  mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice") %>%             str_c(", N = ", n_cj_comment))
+
+
+# As a plot
+predicted %>%
+  filter(comments<10001) %>% 
+  ggplot() + 
+  aes(x = factor(cj_comments_unique), 
+      y = .fitted, 
+      shape = CJ_comment,
+      color = CJ_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .9, option = "plasma") +
+coord_flip() +
+  #facet_wrap("cj_comment", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Justice Change"', 
+       x = "Number of Unique Comments\nRaising Climate Justice Change",
+       color = "",#color = '"Climate Justice Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Justice Change"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) +
+  ylim(0,1) 
+```
+
+---
+
+
+## Example dockets
+
+Rules where the proposed rule did address Climate Justice, the final addressed Climate Justice, and Comments addressed Climate Justice:
+
+```{r}
+
+top_dockets <- cjFRcjPR %>%
+  filter(agency %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" ),
+         cj_fr, # Climate Justice in final
+         cj_comment) %>% # with Climate Justice comments  
+  dplyr::select(docket_id, docket_title) %>% distinct() %>% pull(docket_id)
+
+rules %>% filter(docket_id %in% top_dockets) %>% dplyr::select(docket_id, docket_title, document_type, comments, cj_comments_unique) %>% arrange(docket_id) %>% kablebox()
+
+
+
+# final rule text where the pr did not address Climate Justice
+cjFR %>%
+  filter(agency_id %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" )) %>%
+  filter(docket_id %in% cjFRcjPR$docket_id, # cj_added
+         docket_id %in% cj_comments$docket_id) %>%  # cj_comments
+  distinct(docket_id, title, summary) %>% kablebox()
+```
+
+---
+
+## Example comments
+
+Excerpts from comments mentioning "climate justice" on proposed rules that did not address climate justice: 
+
+```{r}
+cj_comments %>% 
+  filter(docket_id %in% cjFRcjPR$docket_id) %>% 
+  distinct(docket_id, title, summary) %>% kablebox()
+```
+
+---
+
+
+# Regression Tables
+
+```{r}
+library(modelsummary)
+models <- list(
+  "1" = m_PR, 
+  "2" = m_PR_agency,
+  "3"  =  mcjPR,
+  "4" = mcjPR_agency
+)
+
+modelsFE <- list(
+  "1" = m_PRFE, 
+  "2" = m_PR_agencyFE,
+  "3"  =  mcjPRFE,
+  "4" = mcjPR_agencyFE
+)
+
+rows <- tibble(
+  term = c("Dependent Variable", "President FE", "Agency FE"),
+  `1` = c("Climate Justice Added", "X", ""),
+  `2` =c("Climate Justice Added", "X", "X"),
+  `3`  = c("Climate Justice Changed", "X", ""),
+  `4` = c("Climate Justice Changed", "X", "X") #"✓"
+)
+
+attr(rows, 'position') <- c(0, 10,11)
+
+
+rows_d <- tibble(
+  term = c("Dependent Variable", "President Dummies", "Agency Dummies"),
+  `1` = c("Climate Justice Added", "X", ""),
+  `2` =c("Climate Justice Added", "X", "X"),
+  `3`  = c("Climate Justice Changed", "X", ""),
+  `4` = c("Climate Justice Changed", "X", "X") #"✓"
+)
+
+attr(rows_d, 'position') <- c(0, 10,11)
+
+
+rowsFE <- tibble(
+  term = c("Dependent Variable"),
+  `1` = c("Climate Justice Added"), 
+  `2` =c("Climate Justice Added"), 
+  `3`  = c("Climate Justice Changed"), 
+  `4` = c("Climate Justice Changed") #"✓"
+)
+
+attr(rowsFE, 'position') <- c(0)
+
+cm = c("cj_commentTRUE" = "Climate Justice Comment",
+       "log(comments + 1)" = "Log(Comments+1)",
+       "log(cj_comments_unique + 1)" = "Log(Unique Climate Justice Comments+1)",
+       "cj_commentTRUE:log(comments + 1)" = "Climate Justice Comment*Log(Comments+1)")
+
+
+
+# paper table dummies 
+modelsummary::modelsummary( models, 
+                            stars = TRUE, 
+                            coef_map = cm,
+                          add_rows = rows_d, 
+                          notes = "") %>% 
+  row_spec(row = 1, bold = T) %>%
+  kable_styling(latex_options
+ = c(scale_down = TRUE)) 
+
+# paper table fixest
+modelsummary::modelsummary( modelsFE, 
+                            stars = TRUE, 
+                            coef_map = cm,
+                            gof_omit = "R.*",
+                          add_rows = rowsFE, 
+                          notes = "") %>% 
+  row_spec(row = 1, bold = T) %>%
+  kable_styling(latex_options = c(scale_down = TRUE)) 
+
+save(models, rows, cm,  m_PR, 
+ m_PR_agency,
+mcjPR,
+mcjPR_agency,
+     file = "cj_models.Rdata")
+
+# full table 
+m <- modelsummary::modelsummary( models, 
+                            stars = TRUE,
+                            title = "Including President and Agency Dummies") %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+```{r, include=FALSE, eval=FALSE}
+# scratchpad
+
+
+```
+
+---
+
+# TODO
+
+-

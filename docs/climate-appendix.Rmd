@@ -1,0 +1,1917 @@
+---
+#rmarkdown::render("docs/climate-appendix.Rmd")
+title: "The Climate Movement's Impact in Agency Rulemaking"
+subtitle: "Appendix and Replication Code" 
+author: "Devin Judge-Lord"
+output:
+    # pdf_document:
+    #   toc: true
+    #   keep_tex: true
+    html_document:
+      highlight: zenburn
+      toc: true
+      toc_float: true
+      code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = FALSE, 
+                      fig.width=8.5, 
+                      split = T,
+                      fig.align = 'center', 
+                      fig.path='../figs/',
+                      warning=FALSE, 
+                      message=FALSE)
+
+library(modelsummary)
+library(fixest)
+library(tidyverse)
+library(broom)
+library(magrittr)
+library(tidytext)
+library(knitr)
+library(kableExtra)
+library(here)
+
+select <- . %>% dplyr::select()
+
+library(ggplot2); theme_set(theme_bw());
+  options(
+    ggplot2.continuous.color = "mako",
+    ggplot2.continuous.fill = "mako"
+  )
+  scale_color_discrete <- function(...){
+    scale_color_viridis_d(..., direction = -1, 
+                          begin = 0, end = .6, option = "mako")}
+  scale_fill_discrete <- function(...){
+    scale_fill_viridis_d(..., direction = -1, 
+                         begin = 0, end = .6, option = "mako")}
+  
+  scale_color_continuous <- function(...){
+    scale_color_viridis_c(..., direction = -1, 
+                          option = "mako")}
+  scale_fill_continuous <- function(...){
+    scale_fill_viridis_c(..., direction = -1, 
+                         option = "mako")}
+  
+  
+kablebox <- . %>% 
+  head(100) %>% 
+  knitr::kable(digits = 3) %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+# Data
+
+Replication data are available in SQL and Rdata at https://github.com/judgelord/rulemaking 
+
+```{r data, fig.height=11, cache=TRUE}
+load(here::here("data", "climatePR.Rdata"))
+climatePR <- climatePR #FIXME 
+
+load(here::here("data", "climateFR.Rdata"))
+climateFR <- climateFR
+
+load(here::here("data", "climatecomments.Rdata"))
+climatecomments <- climatecomments
+
+# load(here::here("data", "climate_race.Rdata"))
+
+load(here::here("data", "rules_metadata.Rdata"))
+
+# a function to clean raw selected text
+clean_summary <- . %>% 
+  mutate(summary = str_remove_all(highlighted_content,
+               "./em../mark.|.mark..em.") %>% 
+           str_replace_all("\\&hellip;\\&nbsp;"," ") %>% 
+           str_replace_all("[^[A-z][0-9] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
+           str_remove_all("\\(|\\)|\\[|\\]") %>%
+  str_squish() )
+
+# ## Testing regex
+# str_remove_all(climatePRnew$highlighted_content[1],
+#                "./em../mark.|.mark..em.") %>% 
+#            str_replace_all("\\&hellip;\\&nbsp;"," ") %>% 
+#            str_replace_all("[^[A-z][0-9] \\.\\,\\?\\!\\;&\\;<>]", " ") %>% 
+#            str_remove_all("\\(|\\)|\\[|\\]") %>%
+#   str_squish() 
+
+# summary vars
+climatecomments %<>%
+  mutate(docket_id = str_remove(id, "-[0-9]*$") ) %>% 
+  clean_summary()
+
+climatePR %<>% clean_summary()
+
+climateFR %<>% clean_summary()
+
+rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"),
+                    # drop rules before clinton
+                  !is.na(posted_date),
+                  posted_date > as.Date("1993-01-20"),
+                  # rulemaking dockets only
+                  docket_type == "Rulemaking" ) %>%
+  # one document per docket (drop additional PRs )
+  group_by(document_type, docket_id) %>%
+  slice_max(number_of_comments_received)
+
+
+# make summary vars for main data
+rules %<>% 
+  # # add climate comments and climate unique comment counts #FIXME merge in counts from old data, find if new API has this
+  # left_join(climatecomments %>% 
+  #             group_by(docket_id) %>% 
+  #             summarise(climate_comments = sum(number_of_comments_received) ) ) %>%
+  left_join(climatecomments %>% 
+              count(docket_id, name = "climate_comments_unique") ) %>% 
+  mutate(#climate_comments = replace_na(climate_comments, 0),
+         climate_comments_unique = replace_na(climate_comments_unique, 0) ) %>% 
+  # recode 1 as 0 to reduce colinearity with climate_comment, logical
+  #FIXME make this a new var 
+  mutate(climate_comments_unique = ifelse(climate_comments_unique == 1, 0, climate_comments_unique))
+
+# indicators for climate in various docket-level variables
+rules %<>% 
+  group_by(docket_id) %>% 
+  mutate(comments = sum(number_of_comments_received)) %>% 
+  ungroup() %>% 
+  mutate(climate_pr = docket_id %in% climatePR$docket_id,
+         climate_comment = docket_id %in% climatecomments$docket_id,
+         climate_fr = docket_id %in% climateFR$docket_id,
+         # indicator for president
+         president = ifelse(posted_date < as.Date("2017-01-17"), "Obama", "Trump"),
+         president = ifelse(posted_date < as.Date("2009-01-20"), "G. W. Bush", president),
+         president = ifelse(posted_date < as.Date("2001-01-20"), "Clinton", president),
+         year = str_sub(posted_date, 1,4),
+         Year = str_sub(posted_date, 3,4),
+         Year = str_c("`", Year),
+         agency = agency_id
+         ) 
+
+rules %<>% dplyr::select(docket_id, 
+                 docket_title, 
+                 # climate_comments = climate_comments_unique, 
+                 climate_comments_unique, 
+                 climate_pr, 
+                 climate_comment, 
+                 climate_fr, 
+                 president, year, 
+                 comments, 
+                 agency, 
+                 document_type,
+                 year,
+                 Year) %>%
+  distinct()
+```
+
+### Documents
+
+
+```{r climate-data-documenttype, fig.height=3}
+# climate-data-documenttype
+# document type over time
+rules %>% 
+  ggplot() + 
+  aes(x = year, fill = document_type) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "Number of Documents",
+       x = "",
+       fill = "") + 
+  scale_fill_viridis_d(option="cividis", begin = .3, end = .7, direction = -1, ) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+```
+
+### Draft Rules
+
+
+```{r climate-data-climatepr, fig.height=3}
+# climate-data-climatepr
+
+# pr over time
+rules %>% 
+  filter(document_type == "Proposed Rule") %>% 
+  mutate(climate_pr = ifelse(climate_pr, "Climate Addressed", "Climate Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = year, fill = climate_pr) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "All Proposed Rules",
+       x = "",
+       fill = "")+ # "Climate Addressed\nin Proposed Rule") + 
+  scale_fill_viridis_d(option="mako", begin = 0, end = .6, direction = 1) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+
+# climate_pr over time
+climatePR %>% 
+  filter(!is.na(posted_date)) %>% 
+  mutate(year = str_sub(posted_date,1,4)) %>%
+  ggplot() + 
+  aes(x = year) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "Proposed Rules\nAddressing Climate Change",
+       x = "") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+```
+
+### Final rules
+
+```{r climate-data-climatefr, fig.height=3}
+#climate-data-climatefr
+
+# fr type over time
+rules %>% 
+  filter(document_type == "Rule") %>% 
+  mutate(climate_fr = ifelse(climate_fr, "Climate Addressed", "Climate Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = year, fill = climate_fr) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "All Final Rules",
+       x = "",
+       fill = "" ) +# "Climate Addressed\nin Final Rule") + 
+  scale_fill_viridis_d(option="mako", begin = 0, end = .6, direction = 1) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+
+# climate_fr over time
+climateFR %>% 
+  filter(!is.na(posted_date)) %>% 
+  mutate(year = str_sub(posted_date,1,4)) %>%
+  ggplot() + 
+  aes(x = year) +
+  geom_bar(alpha = .7, position = "dodge") + 
+  labs(y  = "Final Rules\nAddressing Climate Change",
+       x = "") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        panel.grid.major.x = element_blank(),
+        panel.border = element_blank())
+
+
+
+```
+
+Subsets of data:
+
+```{r subsets}
+# SUBSETTING -------------------------------------------
+#TODO sensitivity analysis to inclusion criteria
+
+# filter to agencies that published at least one climate rule 
+rules %<>% 
+  group_by(agency) %>% 
+  mutate(agency_climate_rules = sum(climate_fr),
+         agency_climate_comments = sum(climate_comments_unique),
+         agency_climate_nprms = sum(climate_pr)) %>%
+  ungroup() %>% 
+  filter(agency_climate_rules > 0)# | agency_climate_nprms > 0) #TODO sensitivity analysis
+
+rules %>% distinct(docket_id, climate_pr, climate_fr) %>% count(climate_pr, climate_fr) %>% kablebox()
+
+# All proposed rules
+allPR <- rules %>% 
+  # subset to final rules
+  filter(document_type == "Proposed Rule")
+
+
+# All final rules
+allFR <- rules %>% 
+  # subset to final rules with an NPRM 
+  filter(document_type == "Rule") %>%
+  # direct to final rules
+  mutate(direct = ifelse(docket_id %in% allPR$docket_id, "Draft Rule Published", "Direct to Final Rule"))
+
+climatecomments$number_of_comments_received %<>% replace_na(0) 
+
+climatecomments %>% count(docket_id, number_of_comments_received, sort = T) %>% arrange(-number_of_comments_received) %>% kablebox()
+```
+
+### Agencies that published at least 1 rule addressing Climate
+
+Subsetting to agencies that pubished at least one rule explicitly addressing Climate from 1992 through 2020 yields
+ `r allPR %>% distinct(docket_id, comments) %>% summarize(n = sum(comments)) %>% pull(n)` public comments on
+ `r allFR %>% distinct(docket_id) %>% nrow()` rulemaking dockets from
+`r rules %>% distinct(agency) %>% nrow()` agencies, each publishing at least one rule that explicitly addressed climate change. `r sum(climatecomments$number_of_comments_received)` comments mentioning Climate, including  `r climatecomments %>% nrow()` unique comments (excluding duplicates) use the phrase "climate change". 
+
+
+
+```{r climate-data-agencies}
+#climate-data-agencies
+breaks <-  c("`16", 
+             "`00", "`04", "`08", "`20")
+
+allFR %>%
+  filter(year > 2004) %>%
+  mutate(climate_fr = ifelse(climate_fr, "Climate Addressed", "Climate Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = Year, fill = factor(climate_fr, levels = c("Climate Not Addressed", "Climate Addressed"))) +
+  facet_wrap("agency", scales = "free_y") +
+  geom_bar(alpha = .7) +
+  labs(fill = "Climate in Final Rule",
+       x = "",
+       y = "")+ 
+  scale_fill_discrete()+#direction = -1) + 
+  scale_x_discrete(breaks = breaks ) 
+```
+
+### Agencies that received at least 100 unique Climate comments
+
+
+```{r climate-data-agencies100}
+# climate-data-agencies100
+
+breaks <-  c("`16", "`12", 
+             "`00", "`04","`08", "`92",  "`96", "`20")
+# agencies that published at least 100 rules with climate comments
+allFR %>% 
+  filter(agency_climate_comments > 100 | agency_climate_rules > 10 | agency == "FEMA",
+         year > 2004) %>% #distinct(agency, docket_id, agency_climate_comments)
+  mutate(climate_fr = ifelse(climate_fr, "Climate Addressed", "Climate Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = Year, fill = factor(climate_fr, levels = c("Climate Not Addressed", "Climate Addressed"))) +
+  scale_fill_discrete()+#direction = -1) + 
+  facet_wrap("agency", scales = "free_y") +
+  geom_bar(alpha = .7) + 
+  labs(fill = "\"Climate Change\"\nin Final Rule",
+       y = "Number of Rules") + 
+
+  scale_x_discrete(breaks = breaks ) 
+```
+
+
+
+## Draft Rules by President
+
+```{r climate-pr-president, fig.height=2.5}
+#climate-pr-president
+
+allPR %>% 
+  count(Year, climate_pr, president) %>%
+    mutate(climate_pr = ifelse(climate_pr, "Climate Addressed", "Climate Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = Year, y =n,
+      fill = factor(climate_pr, levels = c("Climate Not Addressed", "Climate Addressed"))) +
+  scale_fill_discrete()+#direction = -1) + 
+  geom_col(alpha = .7, position = "dodge") + 
+  facet_grid(. ~ president, scales = "free") + 
+  labs(x = "Year",
+       y = "Number of Proposed Rules",
+       fill = "Addresses Climate Change") + 
+  theme(panel.grid.major.x = element_blank())
+```
+
+
+## Final Rules by President
+
+
+
+```{r climate_fr-president, fig.height=4.5}
+# climate_fr-president
+
+allFR %>% 
+  count(Year, climate_fr, direct, president) %>%
+    mutate(climate_fr = ifelse(climate_fr, "Climate Addressed", "Climate Not Addressed")) %>% 
+  ggplot() + 
+  aes(x = Year, y = n,
+      fill = factor(climate_fr, levels = c("Climate Not Addressed", "Climate Addressed"))) +
+  scale_fill_discrete()+#direction = -1) + 
+  geom_col(alpha = .7, position = "dodge") + 
+  facet_grid(direct ~ president, scales = "free") + 
+  labs(x = "Year",
+       y = "Number of Final Rules",
+       fill = "Addresses Climate Change") + 
+  theme(panel.grid.major.x = element_blank())
+
+allFR %>% 
+  filter(direct == "Draft Rule Published") %>% 
+  mutate(climate_pr = ifelse(climate_pr, "Climate in\nDraft & Final Rule", "Climate\nOnly in Final Rule"),
+         climate_pr = ifelse(climate_fr, climate_pr, "No Climate Mention")) %>% 
+  count(Year, climate_pr, climate_comment, president) %>% 
+  mutate(climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate")) %>% 
+  ggplot() + 
+  aes(x = Year, y = n,
+      fill = factor(climate_comment, levels = c("No Comments Address Climate", "Comments Address Climate"))) +
+  scale_fill_discrete()+#direction = -1) + 
+  geom_col(alpha = .7) + 
+  facet_grid(climate_pr ~ president, scales = "free") + 
+  labs(x = "",
+       y = "Number of Rules",
+       fill = "Comments Raised\nClimate Concerns") + 
+  theme(panel.grid.major.x = element_blank())
+```
+
+---
+
+## Comments 
+
+### by President
+
+
+
+```{r climate-comments,fig.width=7, fig.height = 4}
+# climate_comments
+breaks <- c(1996, 2000, 2004, 2008, 2012, 2016, 2020)
+
+allFR %>% 
+  filter(direct == "Draft Rule Published") %>% 
+  mutate(climate_pr = ifelse(climate_pr, "Climate in\nDraft & Final Rule", "Climate\nOnly in Final Rule"),
+         climate_pr = ifelse(climate_fr, climate_pr, "No Climate Mention")) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate")) %>% 
+  ggplot() + 
+  aes(x = year, color = Climate_comment, shape = Climate_comment) + 
+  # plot climate comments on top
+  geom_jitter(alpha = .3, 
+              aes(y = ifelse(climate_comment, NA, comments) ) ) + 
+  geom_jitter(alpha = .3,
+              aes(y = ifelse(climate_comment, comments, NA) ) ) +
+  #geom_jitter(alpha = .3) + 
+  facet_grid(climate_pr ~ president, scales = "free_x") + 
+  scale_y_log10(labels = scales::comma)  +
+  #scale_x_date(date_labels = "%y") + 
+  labs(x = "",
+       y = "Total Number of Comments per Rule (log scale)",
+       color = "Comments Raised\nClimate Concerns",
+       shape = "Comments Raised\nClimate Concerns") +
+  scale_x_discrete(breaks = breaks) + 
+  scale_color_viridis_d(begin = 0, end = .6, option = "mako") 
+```
+
+# By Organization 
+
+```{r climate-orgs}
+#climate-orgs
+source(here::here("code", "clean_orgs.R") %>% str_replace("cj", "dissertation"))
+
+str_dct <- function(string, pattern) {
+  str_detect(string, regex(pattern, ignore_case = TRUE))
+}
+#functions for case sensitive string manipulation
+str_rm_all <- function(string, pattern) {
+  str_remove_all(string, regex(pattern, ignore_case = TRUE))
+}
+
+
+climateorgs <- climatecomments %>% 
+  drop_na(organization) %>% 
+  filter(!organization %in% c("NA")) %>% 
+   mutate(org_name = organization %>% clean_orgs()) %>% 
+  group_by(org_name) %>% 
+  mutate(Dockets = docket_id %>% unique() %>% length()) %>% 
+  group_by(org_name, Dockets) %>% 
+  summarise(unique = n(),
+            total = sum(number_of_comments_received)) %>% 
+  arrange(-total) 
+
+
+# total from top 100 climateorgs
+climateorgs %<>% 
+  filter(!str_dct(org_name, "unknown|404error|broken link|anonymous|knowwho")) 
+
+
+# FORMAT FOR PRESENTATION 
+climateorgs %<>% mutate(org_name = ifelse(nchar(org_name)<10, str_to_upper(org_name), org_name) )
+
+climateorgs_summary <- climateorgs %>% 
+  ungroup() %>%
+  filter(!str_dct(org_name, "^NA$|unknown|individuals|n/a|^N$")) %>%
+  arrange(-Dockets)   %>% 
+  rename(Organization = org_name, 
+         `Unique Climate Comments` = unique,
+         `Total Climate Comments` = total) 
+
+# need to do better
+nrow(climateorgs_summary)
+climateorgs_summary$`Total Climate Comments` %>% sum()
+
+
+save(climateorgs_summary, file =  here("data", "climateorgs_summary.Rdata"))
+
+climateorgs_summary %>% 
+  kablebox() #%>% kable3(caption = "Organizations Mobilizing the Most Public Comments 2005-2020")
+
+
+climateorgs_summary %>% 
+  arrange(-`Total Climate Comments`) %>% 
+  kablebox() 
+
+climateorgs_FR <- climatecomments %>%
+  mutate(docket_id =str_remove(id, "-[0-9]*$")) %>%
+  #select(docket_id)
+  filter(docket_id %in% allFR$docket_id) %>%
+  drop_na(organization) %>%
+  filter(!organization %in% c("NA")) %>%
+  group_by(organization, docket_id) %>%
+  #add_count(docket_id) %>% #TODO
+  summarise(unique = n(),
+            total = sum(number_of_comments_received)) %>%
+  ungroup() %>% 
+  arrange(-total)
+
+# per docket 
+climateorgs_FR %>%
+  kablebox()
+
+
+# number of dockets 
+climateorgs_FR %>%
+  count(organization, name = "dockets on which org raised Climate", sort = T) %>% 
+  kablebox()
+
+
+# 
+# climateorgs
+
+```
+
+---
+
+# Proposed rules that **did not** address Climate
+
+```{r}
+# Final Rules that where climate was not mentioned in the NPRM
+climateFR_PR <- allFR %>% 
+  filter(docket_id %in% allPR$docket_id, # there is an NPRM
+         !climate_pr) # climate is not in it
+```
+
+Percent where the final rule did address Climate
+
+
+```{r climate-PR-winrate, fig.width=6, fig.height=2}
+#climate-PR-winrate 
+
+winrate <- climateFR_PR %>% 
+  count(climate_comment, climate_fr) %>% 
+  group_by(climate_comment) %>% #FIXME make nice table with percents
+  spread(climate_fr, n) %>% 
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+climateFR_PR %>% 
+  count(climate_comment, climate_fr) %>% 
+  left_join(winrate) %>%
+  group_by(climate_comment) %>% 
+  mutate(mean = mean(c(`TRUE`, `FALSE`)),
+         Climate_fr = climate_fr,#ifelse(climate_fr, "Climate Addressed", "Climate Not Addressed"),
+        Climate_comment = ifelse(climate_comment, "Climate Raised by Commenters", "Climate not Raised by Commenters")) %>% 
+  ggplot() + 
+  aes(x = Climate_comment, 
+      y = n, 
+      fill = Climate_fr, 
+      label = ifelse(climate_fr == climate_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(y = mean)) + 
+  facet_wrap("Climate_comment", scales = "free") + 
+  labs(fill = "Climate in Final Rule",
+       y = "Proposed Rules") + 
+  #scale_fill_viridis_d(option="mako", begin = 0, end = .6, direction = -1) +
+  theme_void() +
+  theme(axis.text.y = element_text(),
+        axis.title.y = element_text(angle = 90),
+        panel.grid.major.y = element_line(color = "grey"))
+```
+
+
+## By president
+
+
+```{r climate-PR-winrate-president, fig.height=3, fig.width=6}
+#climate-PR-winrate-president
+
+winrate <- climateFR_PR %>% 
+  count(climate_comment, climate_fr, president) %>% 
+  group_by(climate_comment) %>% #FIXME make nice table with percents
+  spread(climate_fr, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+climateFR_PR %>% 
+  count(climate_comment, climate_fr, president) %>% 
+  left_join(winrate) %>%
+  group_by(climate_fr) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Climate Comments", "No Climate Comments"),
+         Climate_fr = climate_fr# ifelse(climate_fr, "Climate Addressed", "Climate Not Addressed") 
+         ) %>% 
+  ggplot() + 
+  aes(x = n, y = Climate_comment, 
+      fill = Climate_fr, 
+      label = ifelse(climate_fr== climate_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0) + 
+  facet_wrap("president", scales = "free")+ 
+  labs(fill = "Climate in Final Rule",
+       x = "Proposed Rules that Did Not Address Climate",
+       y = "",
+       title = "Rates of Rule Change by President") + 
+  #scale_fill_viridis_d(option="mako", begin = 0, end = .6, direction = 1) + 
+  #theme_void() +
+  theme(axis.text.x = element_text(angle = 30),
+        panel.grid.major.y = element_blank())
+
+# 
+# climateFR_PR %>% 
+#   ggplot() + 
+#   aes(x = log(climate_comments_unique+1), y = log(comments+1)) + 
+#   geom_jitter() + 
+#   geom_smooth()
+```
+
+
+## Model 
+
+### With president dummies
+
+```{r climate-m-PR}
+# climate-m-PR
+
+m_PR <- glm(climate_fr ~ climate_comment*log(comments+1) +
+              log(climate_comments_unique+1) +
+              president,
+           data = climateFR_PR, 
+             family=binomial(link="logit"))
+
+equatiomatic::extract_eq(m_PR)
+
+modelsummary(m_PR, stars = T)
+```
+
+### With president fixed effects
+
+```{r climate-m-PRFE}
+# climate-m-PR
+m_PRFE <- feglm(climate_fr ~ climate_comment*log(comments+1) +
+              log(climate_comments_unique+1) | president,
+           data = climateFR_PR, 
+             family=binomial(link="logit"))
+
+
+modelsummary(m_PRFE, stars = T)
+```
+
+### Predicted Probabilities by President
+
+
+With the median number of comments on Proposed Rules that did not address Climate, `r median(climateFR_PR$comments)` comments:
+
+```{r climate-m-PR-president-median, fig.width=5.5, fig.height=3.5}
+# climate-m-PR-president-median
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFR_PR %>% 
+  tidyr::expand(climate_comment,
+         #climate_comments = median(climate_comments) %>% round(),
+         climate_comments_unique = median(climate_comments_unique) %>% round(),
+         comments = #c(min(comments),
+                      median(comments) %>% round(),
+                      #max(comments)),
+         president)
+
+predicted <- augment(m_PR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>% 
+           str_c(", N = ", n_climate_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = Climate_comment, y = .fitted, shape = Climate_comment, color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+  facet_wrap("president", ncol = 1) +
+  labs(y = 'Probability that "Climate Change"\nis Added to Final Rule', 
+       x = "",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank())+
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+  ylim(0,1) 
+```
+
+---
+
+With the **mean** number of comments on Proposed Rules that did not address Climate, `r mean(climateFR_PR$comments) %>% round()` comments:
+
+```{r climate-m-PR-president-mean, fig.width=5, fig.height=3.5}
+# climate-m-PR-president-mean
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFR_PR %>% 
+  tidyr::expand(climate_comment,
+         #climate_comments = median(climate_comments) %>% round(),
+         climate_comments_unique = mean(climate_comments_unique) %>% round(),
+         comments = #c(min(comments),
+                      mean(comments) %>% round(),
+                      #max(comments)),
+         president)
+
+predicted <- augment(m_PR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = Climate_comment, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+  facet_wrap("president", ncol = 1) +
+  labs(y = 'Probability that "Climate Change"\nis Added to Final Rule', 
+       x = "",
+       color = "",#color = '"Climate Change"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank())+  
+  scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+  ylim(0,1)
+```
+
+---
+
+## By number of comments
+
+```{r climate-m-PR-comments, fig.width=6, fig.height=2.5}
+# climate-m-PR-comments
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFR_PR %>% 
+  tidyr::expand(comments =  c(1, 10,100,1000,10000),
+         climate_comment,
+         climate_comments_unique = median(climate_comments_unique) %>% round(),
+         president = "Obama")
+
+predicted <- augment(m_PR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+
+# As a plot
+predicted %>%
+  filter(comments<10001) %>% 
+  ggplot() + 
+  aes(x = factor(comments), 
+      y = .fitted, 
+      shape = Climate_comment,
+      color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+#facet_wrap("climate_comment", ncol = 1) +
+  labs(y = 'Probability that "Climate Change"\nis Added to Final Rule', 
+       x = "Number of Comments",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) 
+```
+
+---
+
+## By Agency 
+
+The percent of rules where Climate was added
+
+```{r climate-PR-winrate-agency, fig.height=3, fig.width=6}
+#climate-PR-winrate-agency
+
+winrate <- climateFR_PR %>% 
+  count(climate_comment, climate_fr, agency) %>% 
+  group_by(climate_comment) %>% #FIXME make nice table with percents
+  spread(climate_fr, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 )) %>% 
+  ungroup() %>% 
+  arrange(agency)
+
+winrate %>% filter(climate_comment == F) %>% kablebox()
+
+winrate %>% filter(climate_comment == T) %>% kablebox()
+
+# winrate 
+climateFR_PR %>% count(agency, climate_comment, climate_fr)  %>% 
+  add_count(agency) %>% 
+  filter(nn > 3) %>% 
+  #filter(agency == "EPA") %>%
+  left_join(winrate) %>%
+  group_by(climate_fr) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Climate Comments", "No Climate Comments") ) %>% 
+  ggplot() + 
+  aes(x = n, y = Climate_comment, 
+      fill = climate_fr, 
+      label = ifelse(climate_fr== climate_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0) + 
+  facet_wrap("agency", scales = "free")+ 
+  labs(fill = "Climate in Final Rule",
+       x = "Proposed Rules that Did Not Address Climate",
+       y = "",
+       title = "Rates of Rule Change by Agency") + 
+  theme(axis.ticks = element_blank(),
+        axis.text.x = element_text(angle = 30),
+        panel.grid.major.y = element_blank())
+```
+
+### Models
+
+```{r}
+m_PR_agency <- glm(climate_fr ~ climate_comment*log(comments+1) + 
+                     log(climate_comments_unique+1) + #TODO remove or transform 
+                     president + 
+                     agency,
+           data = climateFR_PR, 
+             family=binomial(link="logit"))
+
+tidy(m_PR_agency) %>% kablebox()
+```
+
+### Predicted Probabilies by Agency
+```{r climate-m-PR-agency, fig.height=9}
+# climate-m-PR-agency
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFR_PR %>%
+  tidyr::expand(climate_comment,
+         president = "Obama",
+         climate_comments_unique = median(comments) %>% round(),
+         comments = median(comments) %>% round(),
+         agency)
+
+predicted <- broom::augment(m_PR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+# calculate difference in probabilities
+predicted %<>% 
+  group_by(agency) %>% 
+  mutate(diff = abs(sum(.fitted) - .fitted - .fitted)*100) %>% 
+  mutate(diff = round(diff, 0) %>% str_pad(2, side = "left", pad = "0")) %>% 
+  mutate(Agency = str_c(diff, "% increase at ", agency)) %>% arrange(Agency)
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+  
+#facet_wrap("agency", ncol = 1, scales = "free") +
+  labs(y = 'Probability that "Climate Change"\nis Added to Final Rule', 
+       x = "",
+       color = "",#color = '"Climate Change"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted Change in Final Rules") + 
+  scale_y_continuous(breaks = c(0, .5,1)) +
+  theme(panel.grid.major.y = element_blank(),
+        panel.border = element_blank()) +
+  ylim(0,1) 
+```
+
+Agencies with at least 300 comments on proposed rules that did not mention climate change (i.e., agencies where at least some of the rules in this dataset saw comments) and at least 3 rules where comments raised Climate concerns (i.e., agencies where Climate is somewhat salient). 
+
+```{r climate-m-PR-agency-top, fig.width=7}
+# climate-m-PR-agency-top
+
+climateFR_PR %>% group_by(agency) %>% count(agency, agency_climate_comments,sum(comments) )  %>%   kablebox()
+
+
+top <- climateFR_PR %>% 
+  group_by(agency) %>% 
+  filter(sum(comments) >=300,
+         agency_climate_comments >=3) %>% 
+    ungroup() %>% 
+    .$agency %>% 
+    unique()
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  filter(agency %in% top) %>% 
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  coord_flip() +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+  scale_y_continuous(breaks = c(0, .5,1)) +
+labs(y = 'Probability that "Climate Change"\nis Added to Final Rule',
+     x = "",
+     color = "",#color = '"Climate Change"\nRaised by Comments', 
+     shape = "",#shape = "Climate Change"\nRaised by Comments', 
+     title = "Predicted change in Final Rules") + 
+  theme(panel.grid.major.y = element_blank(),
+        panel.border  = element_blank())
+```
+
+
+A more selective subset: Agencies that have at least 500 comments on proposed rules that did not mention climate change (i.e., agencies where at least some of the rules in this dataset saw more than a few comments) and at least 50 rules where comments raised Climate concerns (i.e., agencies where Climate is somewhat salient). 
+
+```{r climate-m-PR-agency-toptop, fig.height=3, , fig.width=6}
+# climate-m-PR-agency-toptop
+
+# slightly more selective, requiring 100 comments
+top <- climateFR_PR %>% 
+  group_by(agency) %>% 
+  filter(sum(comments) >=500,
+         agency_climate_comments >=50) %>% 
+    ungroup() %>% 
+    .$agency %>% 
+    unique()
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  filter(agency %in% top) %>% 
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  scale_y_continuous(breaks = c(0, .5,1)) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  labs(y = 'Probability that "Climate Change"\nis Added to Final Rule', 
+       x = "",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  theme(panel.grid.major.y = element_blank(),
+        panel.border = element_blank())
+```
+
+## with Agency Fixed Effects 
+
+(as well as President FE)
+```{r climate-m-PR-comments-agencyFE, fig.width=6, fig.height=2.5}
+# climate-m-PR-comments-agencyFE
+
+# agencies with variation on DV
+# climateFR_PR %<>% group_by(agency) %>% mutate(dv_var = climate_fr %>% unique() %>% length()) %>% ungroup() %>% filter(dv_var > 1)
+
+m_PR_agencyFE <- feglm (climate_fr ~ climate_comment*log(comments+1) + 
+                          log(climate_comments_unique+1) 
+                        | president + agency, se = "twoway",
+           data = climateFR_PR, 
+             family=binomial(link="logit"))
+
+modelsummary(m_PR_agencyFE, stars = T)
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFR_PR %>% 
+  tidyr::expand(comments = c(1, 10,100,1000,10000),
+         climate_comment,
+         climate_comments_unique = median(climate_comments_unique) %>% round(),
+         president = "Obama",
+         agency = "EPA") 
+
+predicted <- broom::augment(m_PR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+# As a plot
+predicted %>%
+  filter(comments<10001) %>% 
+  ggplot() + 
+  aes(x = factor(comments), 
+      y = .fitted, 
+      shape = Climate_comment,
+      color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  #scale_y_continuous(breaks = c(0, .5,1)) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  #facet_wrap("climate_comment", ncol = 1) +
+  labs(y = 'Probability that "Climate Change"\nis Added to Final Rule', 
+       x = "Number of Comments",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) 
+```
+
+```{r climate-m-PR-climatecomments-agencyFE, fig.width=6, fig.height=2.5}
+# climate-m-PR-climatecomments-agencyFE
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFR_PR %>% 
+  tidyr::expand(climate_comments_unique = c(1, 10,100,1000, 10000),
+         climate_comment = TRUE,
+         comments = median(comments) %>% round(),
+         president = "Obama",
+         agency = "EPA") %>% 
+  # set all comments to be Climate comments (we can't have one overall comment and 100 climate comments)
+  mutate(comments = climate_comments_unique)
+
+predicted <- broom::augment(m_PR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+# As a plot
+predicted %>%
+  ggplot() + 
+  aes(x = factor(climate_comments_unique), 
+      y = .fitted, 
+      shape = Climate_comment,
+      color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  #scale_y_continuous(breaks = c(0, .5,1)) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  #facet_wrap("climate_comment", ncol = 1) +
+  labs(y = 'Probability that "Climate Change"\nis Added to Final Rule', 
+       x = "Number of Unique Comments\nRaising Climate Change",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) 
+```
+
+---
+
+
+
+## Example dockets
+
+TODO 
+
+
+
+```{r}
+
+top_dockets <- climateFR_PR %>%
+  filter(agency %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" ),
+         climate_fr, # climate added 
+         climate_comment) %>% # with climate comments  
+  dplyr::select(docket_id, docket_title) %>% 
+  distinct() %>% 
+  pull(docket_id)
+
+rules %>% 
+  filter(docket_id %in% top_dockets) %>% 
+  distinct(docket_id, docket_title, comments, climate_comments_unique) %>%  
+  distinct() %>% 
+  arrange(rev(docket_id)) %>% 
+  kablebox()
+
+
+
+# final rule text where the pr did not address climate
+climateFR %>% 
+  filter(docket_id %in% climateFR_PR$docket_id,
+         docket_id %in% climatecomments$docket_id) %>% # Climate not in PR
+  distinct(docket_id, title, summary) %>% 
+  arrange(desc(docket_id)) %>% 
+  kablebox()
+```
+
+## Example comments
+
+Excerpts from comments mentioning "climate change" on proposed rules that did not address climate change: 
+```{r}
+climatecomments %>% 
+  filter(docket_id %in% climateFR_PR$docket_id) %>% 
+  distinct(docket_id, title, summary) %>%
+  group_by(docket_id) %>%
+  slice_sample(n = 2) %>% kablebox()
+```
+
+---
+
+
+# Proposed rules that **did** address Climate
+
+```{r climate-data-climatePR}
+# climate-data-climatePR
+
+# Final Rules that where climate was mentioned in the NPRM
+climateFRclimatePR <- allFR %>% 
+  filter(#docket_id %in% allPR$docket_id,
+         climate_fr,
+         climate_pr)
+
+# final rule text where the pr did address climate
+change <- climateFR %>% dplyr::select(docket_id, final = summary) %>% 
+  distinct() %>% 
+  left_join(climatePR %>% 
+              dplyr::select(docket_id, draft = summary) %>% distinct() ) %>% 
+  filter(!is.na(draft))
+
+# indicators 
+
+# is there a comment mentioning climate
+change %<>% mutate(climate_comment = docket_id %in% climatecomments$docket_id)
+
+# did the final rule change
+change %<>% mutate(change = !str_detect(draft, fixed(final, ignore_case = T) ))
+  
+
+change %>% 
+  dplyr::select(docket_id, draft, final, climate_comment, change) %>% kablebox()
+
+change %>% 
+  dplyr::select(docket_id, draft, final, change) %>% kablebox()
+
+
+
+# logical
+change01 <- change %>% 
+  distinct(docket_id, change) %>%
+  # dedupe
+  group_by(docket_id) %>% 
+  slice_max(change) %>% #TODO sensitivity analysis 
+  ungroup() 
+
+climateFRclimatePR %<>% left_join(change01) 
+
+climateFRclimatePR %>% count(change, climate_comment) %>% kablebox()
+
+climateFRclimatePR %<>% filter(!is.na(change)) #TODO investigate NAs
+```
+
+Percent where the final rule did change how it addressed Climate
+
+```{r climateclimatePR-winrate, fig.width=6, fig.height=2}
+#climateclimatePR-winrate
+
+winrate <- climateFRclimatePR %>% 
+  count(climate_comment, change) %>% 
+  group_by(climate_comment) %>% #FIXME make nice table with percents
+  spread(change, n) %>% 
+  mutate(percent = round(`TRUE`/(`FALSE`+`TRUE`)*100 ))
+
+winrate %>% kablebox()
+
+climateFRclimatePR %>% 
+  count(climate_comment, change) %>% 
+  left_join(winrate) %>%
+  group_by(climate_comment) %>% 
+  mutate(mean = mean(c(`TRUE`, `FALSE`)),
+        Climate_comment = ifelse(climate_comment, "Climate Raised by Commenters", "Climate not Raised by Commenters")) %>% 
+  ggplot() + 
+  aes(x = Climate_comment, 
+      y = n, 
+      fill = change, 
+      label = ifelse(change == climate_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(y = mean)) + 
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+facet_wrap("Climate_comment", scales = "free") + 
+  labs(fill = "Climate section changed\nin Final Rule",
+       y = "Proposed Rules") + 
+  theme_void() +
+  theme(axis.text.y = element_text(),
+        axis.title.y = element_text(angle = 90),
+        panel.grid.major.y = element_line(color = "grey"))
+```
+
+## Model 
+
+### with president dummies
+```{r climate-mclimatePR}
+#climate-mclimatePR
+
+mclimatePR <- glm(change ~ climate_comment*log(comments +1) +
+                log(climate_comments_unique+1) +
+              president,
+           data = climateFRclimatePR, 
+             family=binomial(link="logit"))
+
+modelsummary(mclimatePR, stars = T)
+```
+
+
+### with president fixed effects
+```{r climate-mclimatePRFE}
+#climate-mclimatePRFE
+
+mclimatePRFE <- feglm(change ~ climate_comment*log(comments +1) +
+                log(climate_comments_unique+1) | president,
+           data = climateFRclimatePR, 
+             family=binomial(link="logit"))
+
+modelsummary(mclimatePRFE, stars = TRUE)
+```
+
+## By president
+
+```{r climateclimatePR-winrate-president, fig.height=3, fig.width=6}
+# climateclimatePR-winrate-president-1
+
+winrate <- climateFRclimatePR %>% 
+  count(climate_comment, change, president) %>% 
+  group_by(climate_comment) %>% #FIXME make nice table with percents
+  spread(change, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+climateFRclimatePR %>% 
+  count(climate_comment, change, president) %>% 
+  left_join(winrate) %>%
+  group_by(change) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Climate Comments", "No Climate Comments") ) %>% 
+  ggplot() + 
+  aes(x = n, y = Climate_comment, 
+      fill = change, 
+      label = ifelse(change== climate_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0) + 
+  facet_wrap("president", scales = "free")+ 
+  labs(fill = "Climate section changed\nin Final Rule",
+       y = "",
+       x = "Proposed Rules that Did Address Climate") + 
+  theme(axis.ticks = element_blank(),
+        panel.grid.major.y = element_blank())
+```
+
+---
+
+### Predicted Probabilities by President
+
+With the median number of comments, `r median(climateFRclimatePR$comments)`
+
+```{r climate-mclimatePR-president-median,fig.width=5.5, fig.height=3.5}
+#climate-mclimatePR-president-median
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFRclimatePR %>% 
+  tidyr::expand(climate_comment,
+         #climate_comments = median(climate_comments) %>% round(),
+         climate_comments_unique = median(climate_comments_unique) %>% round(),
+         comments = #c(min(comments),
+                      median(comments) %>% round(),
+                      #max(comments)),
+         president)
+
+predicted <- augment(mclimatePR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = Climate_comment, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  facet_wrap("president", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Change"', 
+       x = "",
+       color = "",#color = "Climate Change"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank())+
+  ylim(0,1) 
+```
+
+---
+
+With the mean number of comments, `r mean(climateFRclimatePR$comments) %>% round() %>% as.integer()`
+
+```{r climate-mclimatePR-president-mean,fig.width=5.5, fig.height=3.5}
+#climate-mclimatePR-president-mean
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFRclimatePR %>% 
+  tidyr::expand(climate_comment,
+         #climate_comments = median(climate_comments) %>% round(),
+         climate_comments_unique = mean(climate_comments_unique) %>% round(),
+         comments = #c(min(comments),
+                      mean(comments) %>% round(),
+                      #max(comments)),
+         president)
+
+predicted <- augment(mclimatePR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = Climate_comment, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  facet_wrap("president", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Change"', 
+       x = "",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted Change in Final Rules") + 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major.y = element_blank())+
+  ylim(0,1) 
+```
+
+---
+
+## By number of comments
+
+
+
+Change in Climate section of the final rule by number of comments
+
+Percent of rules that change when there are more or less than 10 comments.
+
+```{r climateclimatePR-winrate-comments, fig.height=1.5, fig.width=5.5}
+#climateclimatePR-winrate-comments
+
+winrate <- climateFRclimatePR %>% 
+  mutate(comments10 = comments > 9) %>% 
+  count(change, comments10) %>% 
+  group_by(comments10) %>% #FIXME make nice table with percents
+  spread(change, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+climateFRclimatePR %>% 
+  mutate(comments10 = comments > 9) %>% 
+  count(change, comments10) %>% 
+  left_join(winrate) %>%
+  mutate(comments = ifelse(comments10, "10 or more comments", "Fewer than 10 comments") ) %>% 
+  ggplot() + 
+  aes(x = n, y = comments, 
+      fill = change, 
+      label = percent %>% str_c("%")  ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0, check_overlap = T) + 
+  #facet_wrap("president", scales = "free")+ 
+  labs(fill = "Climate section changed\nin Final Rule",
+       x = "Proposed Rules that Did Address Climate",
+       y = "")
+```
+
+### Predicted Probabilities by Number of Comments
+
+Estimates across numbers of comments received.
+
+```{r climate-mclimatePR-comments, fig.height = 2.5, fig.width=6}
+#climate-mclimatePR-comments
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFRclimatePR %>% 
+  tidyr::expand(comments = c(1,10,100,1000,10000) ,
+         climate_comment,
+         climate_comments_unique = median(climate_comments_unique),
+         president = "Obama")
+
+predicted <- augment(mclimatePR,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) %>% 
+  left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+
+# As a plot
+predicted %>% 
+  ggplot() + 
+  aes(x = factor(comments), y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  #facet_wrap("climate_comment", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Change"', 
+       x = "Number of Comments",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) +
+  ylim(0,1) 
+```
+
+---
+
+## By Agency 
+
+```{r climateclimatePR-winrate-agency, fig.width=6}
+#climateclimatePR-winrate-agency
+
+winrate <- climateFRclimatePR %>% 
+  count(climate_comment, change, agency) %>% 
+  group_by(climate_comment) %>% #FIXME make nice table with percents
+  spread(change, n) %>% 
+    mutate(`FALSE` = replace_na(`FALSE`, 0)) %>%
+  mutate(`TRUE` = replace_na(`TRUE`, 0)) %>%
+  mutate(percent = round(`TRUE`/(`TRUE`+`FALSE`)*100 ))
+
+winrate %>% kablebox()
+
+# winrate 
+climateFRclimatePR %>% count(agency, climate_comment, change)  %>% 
+  add_count(agency) %>% 
+  filter(nn > 2) %>% 
+  #filter(agency == "EPA") %>%
+  left_join(winrate) %>%
+  group_by(change) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Climate Comments", "No Climate Comments") ) %>% 
+  ggplot() + 
+  aes(x = n, y = Climate_comment, 
+      fill = change, 
+      label = ifelse(change== climate_comment, percent, NA) %>% str_c("%") ) +
+  geom_col(alpha = .7) + 
+  geom_text(aes(x = `TRUE`), hjust = 0) + 
+  facet_wrap("agency", scales = "free", ncol = 2)+ 
+  labs(fill = "Climate section changed\nin Final Rule",
+       x = "Proposed Rules that Did Address Climate", 
+       y = "") + 
+  theme(axis.ticks.y = element_blank(),
+        axis.text.x = element_text(angle = 30),
+        panel.grid.major.y = element_blank())
+```
+
+### Models 
+```{r}
+# interaction + agency dummies
+mclimatePR_agency <- glm(change ~ climate_comment*log(comments+1) + 
+                      log(climate_comments_unique+1) + #TODO this is colinear with above two, estimate nPR models
+                      president +
+                      agency,
+                    data = climateFRclimatePR, 
+                    family=binomial(link="logit"))
+
+
+tidy(mclimatePR_agency) %>% kablebox()
+```
+
+### Predicted Probabilities by Agency
+
+```{r climate-mclimatePR-agency}
+# climate-mclimatePR-agency
+
+mclimatePR_agency <- glm(change ~ climate_comment*log(comments+1) + 
+                      log(climate_comments_unique+1) +
+                      president +
+                      agency,
+                    data = climateFRclimatePR, 
+                    family=binomial(link="logit"))
+
+tidy(mclimatePR_agency) %>% kablebox()
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFRclimatePR %>%
+  tidyr::expand(climate_comment,
+         climate_comments_unique = median(comments) %>% round(),
+         comments = median(comments) %>% round(),
+         president = "Obama",
+         agency)
+
+predicted <- augment(mclimatePR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     ) 
+
+# calculate difference in probabilities
+predicted %<>% 
+  group_by(agency) %>% 
+  mutate(diff = abs(sum(.fitted) - .fitted - .fitted)*100) %>% 
+  mutate(diff = round(diff, 0) %>% str_pad(2, side = "left", pad = "0")) %>% 
+  left_join(climateFRclimatePR %>% count(agency, name = "n_agency")) %>% 
+  left_join( climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Agency = str_c(diff, "% increase at ", agency, ", N = ", n_agency),
+         Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  #facet_wrap("agency", ncol = 1, scales = "free") +
+  labs(y = 'Probability of Change in How a Rule Addresses "Climate Change"', 
+       x = "",
+       color = "",#color = "Climate Change"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted change in Final Rules")  + 
+  scale_y_continuous(breaks = c(0, .5,1)) +
+  theme(panel.grid.major.y = element_blank(),
+        panel.border = element_blank()) 
+```
+
+Agencies that have at least 300 comments on proposed rules that did not mention climate change (i.e., agencies where at least some of the rules in this dataset saw comments) and at least 3 rules where comments raised Climate concerns (i.e., agencies where Climate is somewhat salient). 
+
+```{r climate-mclimatePR-agency-top}
+#climate-mclimatePR-agency-top
+
+climateFRclimatePR %>% 
+  group_by(agency) %>% 
+  count(agency, agency_climate_comments,sum(comments) )  %>%   
+  kablebox()
+
+
+top <- climateFRclimatePR %>% 
+  group_by(agency) %>% 
+  filter(sum(comments) >=300,
+         agency_climate_comments >=3) %>% 
+    ungroup() %>% 
+    .$agency %>% 
+    unique()
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  filter(agency %in% top) %>% 
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .7)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  labs(y = 'Probability of Change in How a Rule Addresses "Climate Change"', 
+       x = "",
+       color = "",#color = '"Climate Change"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  scale_y_continuous(breaks = c(0,.5,1)) +
+  theme(panel.border = element_blank(),
+        panel.grid.major.y = element_blank())
+```
+
+
+A more selective subset: Agencies that have at least 500 comments on proposed rules that did not mention climate change (i.e., agencies where at least some of the rules in this dataset saw more than a few comments) and at least 50 rules where comments raised Climate concerns (i.e., agencies where Climate is somewhat salient). 
+
+```{r climate-mclimatePR-agency-toptop, fig.height=3}
+#climate-mclimatePR-agency-toptop
+
+# slightly more selective, requiring 100 comments
+top <- climateFRclimatePR %>% 
+  group_by(agency) %>% 
+  filter(sum(comments) >=500,
+         agency_climate_comments >=50) %>% 
+    ungroup() %>% 
+    .$agency %>% 
+    unique()
+
+
+# As a plot
+predicted %>% 
+  arrange(.fitted) %>%
+  filter(agency %in% top) %>% 
+  ggplot() + 
+  aes(x = Agency, y = .fitted, shape = Climate_comment,color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                      ymax = .fitted + 1.96*.se.fit),
+                  alpha = .6)  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  labs(y = 'Probability of Change in How a Rule Addresses "Climate Change"', 
+       x = "",
+       color = "",#color = '"Climate Change"\nRaised by Comments', 
+       shape = "",#shape = '"Climate Change"\nRaised by Comments', 
+       title = "Predicted change in Final Rules") + 
+  scale_y_continuous(breaks = c(0,.5,1)) +
+  theme(panel.border = element_blank(),
+        panel.grid.major.y = element_blank())
+```
+
+
+## with Agency Fixed Effects 
+
+(as well as president FE)
+
+```{r climate-mclimatePR-comments-agencyFE, fig.width=6, fig.height=2.5}
+#climate-mclimatePR-comments-agencyFE
+
+mclimatePR_agencyFE <- feglm (change ~ climate_comment*log(comments+1) + log(climate_comments_unique+1) 
+                     | president + agency,
+           data = climateFRclimatePR, se = "twoway",
+             family=binomial(link="logit"))
+
+modelsummary(mclimatePR_agencyFE, stars = T)
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFRclimatePR %>% 
+  tidyr::expand(comments =  c(1, 10,100,1000,10000),
+         climate_comment,
+         climate_comments_unique = median(climate_comments_unique) %>% round(),
+         president = "Obama",
+         agency = "EPA")
+
+predicted <- augment(mclimatePR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+
+# As a plot
+predicted %>%
+  filter(comments<10001) %>% 
+  ggplot() + 
+  aes(x = factor(comments), 
+      y = .fitted, 
+      shape = Climate_comment,
+      color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  #facet_wrap("climate_comment", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Change"', 
+       x = "Number of Comments",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) +
+  ylim(0,1) 
+```
+
+
+```{r climate-mclimatePR-climatecomments-agencyFE, fig.width=6, fig.height=2.5}
+#climate-mclimatePR-comments-agencyFE
+
+# A data frame of values at which to estimate probabilities:
+values <- climateFRclimatePR %>% 
+  tidyr::expand(climate_comments_unique =  c(1, 10,100,1000,10000),
+         climate_comment = TRUE,
+         comments = median(comments) %>% round(),
+         president = "Obama",
+         agency = "EPA") %>% 
+  mutate(comments = climate_comments_unique)
+
+predicted <- augment(mclimatePR_agency,  
+                     type.predict = "response",
+                     newdata = values,
+                     se_fit = TRUE
+                     )  %>% 
+  left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+
+
+# As a plot
+predicted %>%
+  filter(comments<10001) %>% 
+  ggplot() + 
+  aes(x = factor(climate_comments_unique), 
+      y = .fitted, 
+      shape = Climate_comment,
+      color = Climate_comment) + 
+  geom_pointrange(aes(ymin = .fitted - 1.96*.se.fit,
+                  ymax = .fitted + 1.96*.se.fit), alpha = .7 )  + 
+  geom_hline(yintercept = 0, linetype = 2) +
+    scale_color_viridis_d(begin = 0, end = .6, option = "mako") +
+coord_flip() +
+  #facet_wrap("climate_comment", ncol = 1) +
+  labs(y = 'Probability of Change in How a Rule\nAddresses "Climate Change"', 
+       x = "Number of Unique Comments\nRaising Climate Change",
+       color = "",#color = '"Climate Change"\nRaised by Comments',
+       shape = "",#shape = '"Climate Change"\nRaised by Comments',
+       title = "Predicted Change in Final Rules")  +
+  theme(panel.border  = element_blank(),
+        panel.grid.major.y = element_blank()) +
+  ylim(0,1) 
+```
+
+---
+
+
+## Example dockets
+
+Rules where the proposed rule did address Climate, the final addressed Climate, and Comments addressed Climate:
+
+```{r}
+
+top_dockets <- climateFRclimatePR %>%
+  filter(agency %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" ),
+         climate_fr, # climate in final
+         climate_comment) %>% # with climate comments  
+  dplyr::select(docket_id, docket_title) %>% distinct() %>% pull(docket_id)
+
+rules %>% filter(docket_id %in% top_dockets) %>% dplyr::select(docket_id, docket_title, document_type, comments, climate_comments_unique) %>% arrange(docket_id) %>% kablebox()
+
+
+
+# final rule text where the pr did not address climate
+climateFR %>%
+  filter(agency_id %in% c(top, "HUD", "FRA", "DHS", "DOJ", "ED", "DOS", "BIA", "USCBP", "OSHA", "RUS" )) %>%
+  filter(docket_id %in% climateFRclimatePR$docket_id, # climate_added
+         docket_id %in% climatecomments$docket_id) %>%  # climatecomments
+  distinct(docket_id, title, summary) %>% kablebox()
+```
+
+---
+
+## Example comments
+
+Excerpts from comments mentioning "climate change" on proposed rules that did not address climate change: 
+
+```{r}
+climatecomments %>% 
+  filter(docket_id %in% climateFRclimatePR$docket_id) %>% 
+  distinct(docket_id, title, summary) %>% kablebox()
+```
+
+---
+
+
+# Regression Tables
+
+```{r}
+library(modelsummary)
+models <- list(
+  "1" = m_PR, 
+  "2" = m_PR_agency,
+  "3"  =  mclimatePR,
+  "4" = mclimatePR_agency
+)
+
+modelsFE <- list(
+  "1" = m_PRFE, 
+  "2" = m_PR_agencyFE,
+  "3"  =  mclimatePRFE,
+  "4" = mclimatePR_agencyFE
+)
+
+rows <- tibble(
+  term = c("Dependent Variable", "President FE", "Agency FE"),
+  `1` = c("Climate Language Added", "X", ""),
+  `2` =c("Climate Language Added", "X", "X"),
+  `3`  = c("Climate Language Changed", "X", ""),
+  `4` = c("Climate Language Changed", "X", "X") #"✓"
+)
+
+attr(rows, 'position') <- c(0, 10,11)
+
+
+rows_d <- tibble(
+  term = c("Dependent Variable", "President Dummies", "Agency Dummies"),
+  `1` = c("Climate Language Added", "X", ""),
+  `2` =c("Climate Language Added", "X", "X"),
+  `3`  = c("Climate Language Changed", "X", ""),
+  `4` = c("Climate Language Changed", "X", "X") #"✓"
+)
+
+attr(rows_d, 'position') <- c(0, 10,11)
+
+
+rowsFE <- tibble(
+  term = c("Dependent Variable"),
+  `1` = c("Climate Language Added"), 
+  `2` =c("Climate Language Added"), 
+  `3`  = c("Climate Language Changed"), 
+  `4` = c("Climate Language Changed") #"✓"
+)
+
+attr(rowsFE, 'position') <- c(0)
+
+cm = c("climate_commentTRUE" = "Climate Comment",
+       "log(comments + 1)" = "Log(Comments+1)",
+       "log(climate_comments_unique + 1)" = "Log(Unique Climate Comments+1)",
+       "climate_commentTRUE:log(comments + 1)" = "Climate Comment*Log(Comments+1)")
+
+
+
+# paper table dummies 
+modelsummary::modelsummary( models, 
+                            stars = TRUE, 
+                            coef_map = cm,
+                          add_rows = rows_d, 
+                          notes = "") %>% 
+  row_spec(row = 1, bold = T) %>%
+  kable_styling(latex_options
+ = c(scale_down = TRUE)) 
+
+# paper table fixest
+modelsummary::modelsummary( modelsFE, 
+                            stars = TRUE, 
+                            coef_map = cm,
+                            gof_omit = "R.*",
+                          add_rows = rowsFE, 
+                          notes = "") %>% 
+  row_spec(row = 1, bold = T) %>%
+  kable_styling(latex_options = c(scale_down = TRUE)) 
+
+save(models, rows, cm,  m_PR, 
+ m_PR_agency,
+mclimatePR,
+mclimatePR_agency,
+     file = "climate_models.Rdata")
+
+# full table 
+m <- modelsummary::modelsummary( models, 
+                            stars = TRUE,
+                            title = "Including President and Agency Dummies") %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+```{r, include=FALSE, eval=FALSE}
+# scratchpad
+
+
+```
+
+---
+
+# TODO
+
+-
