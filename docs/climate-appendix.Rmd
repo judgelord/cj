@@ -19,7 +19,7 @@ editor_options:
 
 ```{r global.options, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
-                      cache = FALSE, 
+                      cache = TRUE, 
                       fig.width=8.5, 
                       split = T,
                       fig.align = 'center', 
@@ -114,6 +114,8 @@ rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"),
                     # drop rules before clinton
                   !is.na(posted_date),
                   posted_date > as.Date("1993-01-20"),
+                  # drop rules before Bush II
+                  posted_date > as.Date("2005-01-20"),
                   # rulemaking dockets only
                   docket_type == "Rulemaking" ) %>%
   # one document per docket (drop additional PRs )
@@ -260,6 +262,30 @@ climateFR %>%
 
 ```
 
+## Comments Ignored
+
+```{r}
+climatecomments %<>%
+  mutate(organization = coalesce(organization, title)) 
+
+climatecomments %>% 
+  filter(!str_detect(docket_id, "21-"),
+         !docket_id %in% climateFR$docket_id,
+         !docket_id %in% climatePR$docket_id) %>% 
+  dplyr::select(id, organization, climate_text = summary) %>% 
+    kablebox()
+```
+
+## Comments Not ignored Ignored
+
+```{r}
+climatecomments %>%
+  filter(docket_id %in% climateFR$docket_id,
+         !docket_id %in% climatePR$docket_id) %>% 
+  dplyr::select(id, organization, climate_text = summary) %>% 
+  kablebox()
+```
+
 Subsets of data:
 
 ```{r subsets}
@@ -394,12 +420,12 @@ allFR %>%
 allFR %>% 
   filter(direct == "Draft Rule Published") %>% 
   mutate(climate_pr = ifelse(climate_pr, "Climate in\nDraft & Final Rule", "Climate\nOnly in Final Rule"),
-         climate_pr = ifelse(climate_fr, climate_pr, "No Climate Mention")) %>% 
+         climate_pr = ifelse(climate_fr, climate_pr, "No Climate Text")) %>% 
   count(Year, climate_pr, climate_comment, president) %>% 
-  mutate(climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate")) %>% 
+  mutate(climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate")) %>% 
   ggplot() + 
   aes(x = Year, y = n,
-      fill = factor(climate_comment, levels = c("No Comments Address Climate", "Comments Address Climate"))) +
+      fill = factor(climate_comment, levels = c("No Comments Address\nClimate", "Comments Address\nClimate"))) +
   scale_fill_discrete()+#direction = -1) + 
   geom_col(alpha = .7) + 
   facet_grid(climate_pr ~ president, scales = "free") + 
@@ -424,8 +450,8 @@ breaks <- c(1996, 2000, 2004, 2008, 2012, 2016, 2020)
 allFR %>% 
   filter(direct == "Draft Rule Published") %>% 
   mutate(climate_pr = ifelse(climate_pr, "Climate in\nDraft & Final Rule", "Climate\nOnly in Final Rule"),
-         climate_pr = ifelse(climate_fr, climate_pr, "No Climate Mention")) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate")) %>% 
+         climate_pr = ifelse(climate_fr, climate_pr, "No Climate Text")) %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate")) %>% 
   ggplot() + 
   aes(x = year, color = Climate_comment, shape = Climate_comment) + 
   # plot climate comments on top
@@ -563,7 +589,7 @@ climateFR_PR %>%
   group_by(climate_comment) %>% 
   mutate(mean = mean(c(`TRUE`, `FALSE`)),
          Climate_fr = climate_fr,#ifelse(climate_fr, "Climate Addressed", "Climate Not Addressed"),
-        Climate_comment = ifelse(climate_comment, "Climate Raised by Commenters", "Climate not Raised by Commenters")) %>% 
+        Climate_comment = ifelse(climate_comment, "Climate Raised\nby Commenters", "Climate not Raised\nby Commenters")) %>% 
   ggplot() + 
   aes(x = Climate_comment, 
       y = n, 
@@ -685,7 +711,7 @@ predicted <- augment(m_PR,
                      se_fit = TRUE
                      ) %>% 
   left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>% 
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>% 
            str_c(", N = ", n_climate_comment))
 
 
@@ -733,7 +759,7 @@ predicted <- augment(m_PR,
                      se_fit = TRUE
                      ) %>% 
   left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 
 # As a plot
@@ -777,7 +803,7 @@ predicted <- augment(m_PR,
                      se_fit = TRUE
                      )  %>% 
   left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 
 # As a plot
@@ -881,7 +907,7 @@ predicted <- broom::augment(m_PR_agency,
                      se_fit = TRUE
                      )  %>% 
   left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 # calculate difference in probabilities
 predicted %<>% 
@@ -1023,7 +1049,7 @@ predicted <- broom::augment(m_PR_agency,
                      se_fit = TRUE
                      )  %>% 
   left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 # As a plot
 predicted %>%
@@ -1068,7 +1094,7 @@ predicted <- broom::augment(m_PR_agency,
                      se_fit = TRUE
                      )  %>% 
   left_join(climateFR_PR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 # As a plot
 predicted %>%
@@ -1213,7 +1239,7 @@ climateFRclimatePR %>%
   left_join(winrate) %>%
   group_by(climate_comment) %>% 
   mutate(mean = mean(c(`TRUE`, `FALSE`)),
-        Climate_comment = ifelse(climate_comment, "Climate Raised by Commenters", "Climate not Raised by Commenters")) %>% 
+        Climate_comment = ifelse(climate_comment, "Climate Raised\nby Commenters", "Climate not Raised\nby Commenters")) %>% 
   ggplot() + 
   aes(x = Climate_comment, 
       y = n, 
@@ -1318,7 +1344,7 @@ predicted <- augment(mclimatePR,
                      se_fit = TRUE
                      ) %>% 
   left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 
 # As a plot
@@ -1365,7 +1391,7 @@ predicted <- augment(mclimatePR,
                      se_fit = TRUE
                      ) %>% 
   left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 
 # As a plot
@@ -1450,7 +1476,7 @@ predicted <- augment(mclimatePR,
                      se_fit = TRUE
                      ) %>% 
   left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 
 # As a plot
@@ -1563,7 +1589,7 @@ predicted %<>%
   left_join(climateFRclimatePR %>% count(agency, name = "n_agency")) %>% 
   left_join( climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
   mutate(Agency = str_c(diff, "% increase at ", agency, ", N = ", n_agency),
-         Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+         Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 
 
@@ -1698,7 +1724,7 @@ predicted <- augment(mclimatePR_agency,
                      se_fit = TRUE
                      )  %>% 
   left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 
 # As a plot
@@ -1744,7 +1770,7 @@ predicted <- augment(mclimatePR_agency,
                      se_fit = TRUE
                      )  %>% 
   left_join(climateFRclimatePR %>% count(climate_comment, name = "n_climate_comment") ) %>% 
-  mutate(Climate_comment = ifelse(climate_comment, "Comments Address Climate", "No Comments Address Climate") %>%             str_c(", N = ", n_climate_comment))
+  mutate(Climate_comment = ifelse(climate_comment, "Comments Address\nClimate", "No Comments Address\nClimate") %>%             str_c(", N = ", n_climate_comment))
 
 
 # As a plot
@@ -1890,11 +1916,11 @@ modelsummary::modelsummary( modelsFE,
   row_spec(row = 1, bold = T) %>%
   kable_styling(latex_options = c(scale_down = TRUE)) 
 
-save(models, rows, cm,  m_PR, 
- m_PR_agency,
-mclimatePR,
-mclimatePR_agency,
-     file = "climate_models.Rdata")
+save(models, rows, cm,  m_PRFE, 
+ m_PR_agencyFE,
+mclimatePRFE,
+mclimatePR_agencyFE,
+     file = here::here("data", "climate_models.Rdata"))
 
 # full table 
 m <- modelsummary::modelsummary( models, 

@@ -19,7 +19,7 @@ editor_options:
 
 ```{r global.options, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
-                      cache = FALSE, 
+                      cache = TRUE, 
                       fig.width=8.5, 
                       split = T,
                       fig.align = 'center', 
@@ -92,6 +92,7 @@ cjFR <- climateFR %>% filter(id %in% cjFR$id |
 load(here::here("data", "climatecomments.Rdata"))
 cj_comments <- climatecomments %>% filter(cj)
 
+
 # load(here::here("data", "cj_race.Rdata"))
 
 load(here::here("data", "rules_metadata.Rdata"))
@@ -126,6 +127,8 @@ rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"),
                     # drop rules before clinton
                   !is.na(posted_date),
                   posted_date > as.Date("1993-01-20"),
+                  # drop rules before Bush II
+                  # posted_date > as.Date("2005-01-20"),
                   # rulemaking dockets only
                   docket_type == "Rulemaking" ) %>%
   # one document per docket (drop additional PRs )
@@ -235,6 +238,8 @@ cjPR %>%
         panel.border = element_blank())
 ```
 
+---
+
 ### Final rules
 
 ```{r cj-data-cjfr, fig.height=3}
@@ -268,8 +273,50 @@ cjFR %>%
         panel.grid.major.x = element_blank(),
         panel.border = element_blank())
 
+cjFR %>% dplyr::select(id, summary) %>% kablebox()
+
+```
+
+---
+
+## Comments Ignored
 
 
+```{r}
+load(here::here("data", "cjcomments.Rdata"))
+
+cjcomments %<>% clean_summary() %>% rename(CJ_text = summary)
+
+load(here::here("data", "ejcommentsnew.Rdata"))
+
+ejcommentsnew %<>% clean_summary() %>% rename(EJ_text = summary)
+
+cj_comments %>%
+  mutate(organization = coalesce(organization, title)) %>% 
+  filter(!docket_id %in% cjFR$docket_id,
+         !docket_id %in% cjPR$docket_id) %>% 
+  dplyr::select(id, organization, climate_text = summary) %>% 
+  left_join(ejcommentsnew %>% 
+              dplyr::select(id, EJ_text)) %>% 
+  left_join(cjcomments %>% 
+              dplyr::select(id, CJ_text)) %>% 
+  drop_na(CJ_text, EJ_text) %>%  kablebox()
+```
+
+## Comments Not Ignored
+
+```{r}
+cj_comments %>%
+  filter(docket_id %in% cjFR$docket_id,
+         !docket_id %in% cjPR$docket_id) %>% 
+  dplyr::select(id, title, climate_text = summary) %>% 
+  left_join(ejcommentsnew %>% 
+              dplyr::select(id, EJ_text)) %>% 
+  left_join(cjcomments %>% 
+              dplyr::select(id, CJ_text)) %>% 
+  drop_na(CJ_text) %>%  
+  arrange(EJ_text) %>% 
+  kablebox()
 ```
 
 Subsets of data:
@@ -303,7 +350,10 @@ allFR <- rules %>%
   mutate(direct = ifelse(docket_id %in% allPR$docket_id, "Draft Rule Published", "Direct to Final Rule"))
 
 cj_comments$number_of_comments_received %<>% replace_na(0) 
+```
 
+Dockets by total number of comments
+```{r cj-dockets-by-number of comments}
 cj_comments %>% count(docket_id, number_of_comments_received, sort = T) %>% arrange(-number_of_comments_received) %>% kablebox()
 ```
 
@@ -377,7 +427,7 @@ allPR %>%
   facet_grid(. ~ president, scales = "free") + 
   labs(x = "Year",
        y = "Number of Proposed Rules",
-       fill = "Climate\nJustice\nAnalysis") + 
+       fill = "Climate\nJustice\nText") + 
   theme(panel.grid.major.x = element_blank())
 ```
 
@@ -400,13 +450,13 @@ allFR %>%
   facet_grid(direct ~ president, scales = "free") + 
   labs(x = "Year",
        y = "Number of Final Rules",
-       fill = "Climate\nJustice\nAnalysis") + 
+       fill = "Climate\nJustice\nText") + 
   theme(panel.grid.major.x = element_blank())
 
 allFR %>% 
   filter(direct == "Draft Rule Published") %>% 
   mutate(cj_pr = ifelse(cj_pr, "Climate Justice in\nDraft & Final Rule", "Climate Justice\nOnly in Final Rule"),
-         cj_pr = ifelse(cj_fr, cj_pr, "No Climate\nJustice Analysis")) %>% 
+         cj_pr = ifelse(cj_fr, cj_pr, "No Climate\nJustice Text")) %>% 
   count(Year, cj_pr, cj_comment, president) %>% 
   mutate(cj_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice")) %>% 
   ggplot() + 
@@ -436,7 +486,7 @@ breaks <- c(1996, 2000, 2004, 2008, 2012, 2016, 2020)
 allFR %>% 
   filter(direct == "Draft Rule Published") %>% 
   mutate(cj_pr = ifelse(cj_pr, "Climate Justice in\nDraft & Final Rule", "Climate Justice\nOnly in Final Rule"),
-         cj_pr = ifelse(cj_fr, cj_pr, "No Climate\nJustice Analysis")) %>% 
+         cj_pr = ifelse(cj_fr, cj_pr, "No Climate\nJustice Text")) %>% 
   mutate(CJ_comment = ifelse(cj_comment, "Comments Address\nClimate Justice", "No Comments Address\nClimate Justice")) %>% 
   ggplot() + 
   aes(x = year, color = CJ_comment, shape = CJ_comment) + 
@@ -773,7 +823,7 @@ predicted %>%
 
 ## By number of comments
 
-```{r cj-m-PR-comments, fig.width=6, fig.height=2.5}
+```{r cj-m-PR-comments, fig.width=5, fig.height=2.5}
 # cj-m-PR-comments
 
 # A data frame of values at which to estimate probabilities:
@@ -1061,7 +1111,7 @@ coord_flip() +
         panel.grid.major.y = element_blank()) 
 ```
 
-```{r cj-m-PR-cj-comments-agencyFE, fig.width=6, fig.height=2.5}
+```{r cj-m-PR-cj-comments-agencyFE, fig.width=5, fig.height=2.5}
 # cj-m-PR-cj-comments-agencyFE
 
 # A data frame of values at which to estimate probabilities:
@@ -1827,8 +1877,9 @@ cj_comments %>%
 
 # Regression Tables
 
-```{r}
+```{r, cache=FALSE}
 library(modelsummary)
+
 models <- list(
   "1" = m_PR, 
   "2" = m_PR_agency,
@@ -1906,7 +1957,87 @@ save(models, rows, cm,  m_PR,
  m_PR_agency,
 mcjPR,
 mcjPR_agency,
-     file = "cj_models.Rdata")
+     file = here::here("data", "cj_models.Rdata"))
+
+# full table 
+m <- modelsummary::modelsummary( models, 
+                            stars = TRUE,
+                            title = "Including President and Agency Dummies") %>% 
+  kable_styling() %>% 
+  scroll_box(height = "400px")
+```
+
+## Regressions with "climate change" + "climate justice"
+
+```{r climatemodels, cache=FALSE}
+#FIXME I'm useing agency duymmies, but modelsummary can now handel FE Models 
+m_PR_cjFE <- m_PRFE
+m_PR_agency_cjFE <- m_PR_agencyFE
+
+
+# Climate models
+load(here::here("data", "climate_models.Rdata"))
+
+
+models <- list(
+  "1" = m_PRFE, 
+  "2" = m_PR_agencyFE,
+  "3"  =  m_PR_cjFE,
+  "4" = m_PR_agency_cjFE
+)
+
+
+
+rows <- tibble(
+  term = c("Dependent Variable"),
+  `1` = c("Climate Change Text Added"),
+  `2` =c("Climate Change Text Added"),
+  `3`  = c("Climate Justice Text Added"),
+  `4` = c("Climate Justice Text Added") #"✓"
+)
+
+attr(rows, 'position') <- c(0, 16,17)
+
+
+cm = c("climate_commentTRUE" = "Climate Change Comment",
+       "cj_commentTRUE" = "Climate Justice Comment",
+       "log(climate_comments_unique + 1)" = "Log(Unique Climate Change Comments+1)",
+       "log(cj_comments_unique + 1)" = "Log(Unique Climate Justice Comments+1)",
+       "log(comments + 1)" = "Log(Comments+1)",
+       "climate_commentTRUE:log(comments + 1)" = "Climate Change Comment * Log(Comments+1)",
+       "cj_commentTRUE:log(comments + 1)" = "Climate Justice Comment * Log(Comments+1)")
+
+# shorter names + ×
+
+cm = c("climate_commentTRUE" = "CC Comment",
+       "cj_commentTRUE" = "CJ Comment",
+       "log(climate_comments_unique + 1)" = "Log(Unique CC Comments+1)",
+       "log(cj_comments_unique + 1)" = "Log(Unique CJ Comments+1)",
+       "log(comments + 1)" = "Log(Comments+1)",
+       "climate_commentTRUE:log(comments + 1)" = "CC Comment * Log(Comments+1)",
+       "cj_commentTRUE:log(comments + 1)" = "CJ Comment * Log(Comments+1)")
+
+
+
+
+# paper table dummies 
+modelsummary::modelsummary( models, 
+                            stars = TRUE, 
+                            gof_omit = "R.*",
+                            add_rows = rows,
+                            coef_map = cm,
+                          notes = "") %>% 
+  row_spec(row = 1, bold = T) %>%
+  kable_styling(latex_options
+ = c(scale_down = TRUE)) 
+
+
+
+save(models, rows, cm,  m_PRFE, 
+ m_PR_agencyFE,
+m_PR_cjFE,
+m_PR_agency_cjFE,
+     file = here::here("data", "climate_cj_models.Rdata"))
 
 # full table 
 m <- modelsummary::modelsummary( models, 
@@ -1926,4 +2057,4 @@ m <- modelsummary::modelsummary( models,
 
 # TODO
 
--
+- exclude "delay of effective date" and other post FR actions

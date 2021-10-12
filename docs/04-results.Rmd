@@ -1,0 +1,100 @@
+## Results: Changes in How Policy Documents Address Distributive Justice {#cj-results}
+
+### Are final rules more likely to address climate change or climate justice after comments do so?
+
+<!--Figure \@ref(fig:cj-PR-winrate-1) shows that, in general, -->
+
+Where climate change or climate justice is not addressed in the draft rule, a higher percent of rules add CJ language when comments raise CJ concerns. Descriptively,  there is a large difference in the rate of addressing CJ between rules where commenters did (33 percent) and did not raise CJ concerns (4 percent). However, in most cases (67 percent), agencies did not respond at all when commenters raised CJ concerns.
+
+<!--
+```{r cj-PR-winrate-1, fig.cap = "Proposed Rules that Did Not Address Climate Change/Justice", out.width = "60%"}
+
+knitr::include_graphics(here::here("Figs", "cj-PR-winrate-1.png"))
+```
+
+Rates of adding CJ in rules without CJ comments have decreased over time, leveling out at 3 percent during the Obama and Trump presidencies. Rates of adding CJ when commenters raised CJ concerns are consistently much higher but also decreased over time, from 57 percent under G.W. Bush to 26 percent under Trump.
+<!--Finally, looking at selected agencies, Figure \@ref(fig:cj-PR-winrate-2) shows that-->
+EPA had a relatively high baseline rate of change (10 percent), which increased to 52 percent when comments raised CJ concerns. Most other agencies also added CJ at a higher rate when comments raised CJ concerns; indeed, most agencies almost never added mentions of climate change or climate justice when comments did not raise CJ concerns.
+
+<!--
+```{r cj-PR-winrate-2, fig.cap = "Percent of Rules that Changed in How they Addressed Climate Change/Justice by President and by Agency",out.width = "100%"}
+
+knitr::include_graphics(here::here("Figs", "cj-PR-winrate-president-1.png"))
+
+knitr::include_graphics(here::here("Figs", "cj-PR-winrate-agency-1.png"))
+```
+
+### Estimating *Whether* "Climate Change/Justice" is Added to Final Rule
+-->
+
+To account for differences across presidents, agencies, and the number of comments, I estimate logit regressions. For models 1 and 2 in Table \@ref(tab:cj-tables), the outcome is whether the agency added climate change to the final rule. The predictors are
+whether comments raised CJ concerns, the number of unique (non-form letter) comments addressing CJ, the total number of comments (including form letters), and the interaction between the total number of comments and whether any comments raised CJ concerns. Models 3 and 4 are the same as models 1 and 2, except that the outcome is whether the policy text changed how CJ is discussed (described in the next section). All models include fixed effects for the presidential administration. Models 2 and 4 also include fixed effects for each agency. Thus, estimates in Models 1 and 3 include variation *across* agencies, whereas estimates in models 2 and 4 only rely on variation *within* agencies. All estimates rely on variation *within* each presidential administration. 
+<!--The base equation for model 1 is shown below.-->
+All predicted probabilities shown below include agency fixed effects, models 2 and 4.
+
+```{r cj-m-PR, cache=FALSE}
+source(here::here("code", "setup.R"))
+
+
+load(here::here("data", "climate_cj_models.Rdata"))
+#equatiomatic::extract_eq(m_PR)
+```
+
+```{r cj-tables}
+modelsummary::modelsummary( models, 
+                            stars = TRUE, 
+                            gof_omit = "R.*",
+                            add_rows = rows,
+                            coef_map = cm,
+                          notes = "") %>% 
+  row_spec(row = 1, bold = T) %>%
+  #kable_styling(latex_options = c(scale_down = TRUE)) #%>% 
+  kable2(file = "cj-tables") #%>% 
+  #kable_styling(latex_options = c("scale_down")) 
+```
+
+
+#### The Predicted Probability of Added Text
+
+As logit coefficients are not easily interpretable, Figures \@ref(fig:cj-m-PR-president-median-1), \@ref(fig:cj-m-PR-comments-agencyFE), and  \@ref(fig:cj-m-PR-agency-top) show the predicted probability of a final rule addressing climate change/justice when the draft rule did not. 
+
+Controlling for average rates of policy change per agency and the number of comments, Figure \@ref(fig:cj-m-PR-president-median-1) shows a large increase in the probability of policy change when comments raise CJ concerns. This supports the *Distributive Claims Hypothesis* (\@ref(hyp:cj-claims)). When comments raise distributive justice concerns, they are more likely to be addressed in the final policy. Rates of adding CJ language decrease after the G.W. Bush Administration, but differences between presidents are small compared to the difference between rules that did and did not receive CJ comments.  Other variables are held at their modal values: the EPA, zero additional CJ comments, and one comment total.^[All predicted probability plots below also show probabilities at the modal values for other variables: President Obama, the EPA, zero additional CJ comments, and the median number of total comments (one comment for models 1 and 2; four comments for models 3 and 4) unless otherwise specified.] 
+
+```{r cj-m-PR-president-median-1, fig.cap = 'Probability that "Climate Change/Justice" is Added Between Draft and Final Rules by President', out.width = "80%"}
+
+knitr::include_graphics(here::here("Figs", "climate-m-PR-president-median-1.png"))
+
+knitr::include_graphics(here::here("Figs", "cj-m-PR-president-median-1.png"))
+```
+
+Figure \@ref(fig:cj-m-PR-comments-agencyFE) shows the probability that an agency will add CJ language given different total numbers of comments. 
+At low numbers of total comments (i.e., low levels of public attention), a single comment raising climate change or climate justice is a strong predictor that language mentioning climate change or climate justice will be added to the final rule. For rules with less than ten comments (most rules), one comment mentioning CJ is associated with a 30 percent increase in the probability that CJ will be addressed in the final rule. This supports the *Distributive Claims Hypothesis* (\@ref(hyp:cj-claims)). However, <!--as in figure \@ref(fig:cj-PR-winrate-1), -->
+the probability that an agency will add CJ language is still below 50 percent---even when comments raise CJ concerns, agencies tend not to address them. 
+
+As the number of comments increases, the probability that a rule will add text addressing CJ increases. This supports the *Public Attention Hypothesis* (\@ref(hyp:cj-attention))---policy change is more likely when there is more public attention to a policy process. Simultaneously, there is a negative interaction between the number of comments and CJ comments---the more comments, the smaller the relationship between comments raising CJ and agencies addressing CJ in the rule. In the small portion of highly salient rules with 10,000 or more comments, the presence of comments raising CJ concerns no longer has a statistically significant relationship with agencies adding CJ to the text. With or without CJ comments, these rules have about the same probability of change as those with just one CJ comment, just under 50 percent. This is evidence against the *Public Pressure Hypothesis* (\@ref(hyp:cj-pressure))---the number of comments matters (i.e., the scale of public attention) matters regardless of whether these comments explicitly raise CJ concerns. However, as shown in Figure \@ref(fig:cj-comments), few rules with 10,000 or more comments do not have at least one comment mentioning CJ, so we are highly uncertain about estimates of the impact of CJ comments with high levels of public attention. We can be much more confident about the relationship between comments raising CJ concerns and rule change at lower, more typical levels of public attention.
+
+The probability of
+"climate change" or "climate justice" appearing in the final rule also increases with the number of unique comments mentioning "climate change" or "climate justice" in models 2, 3, and 4. Overall this supports the *Repeated Claims Hypothesis* (\@ref(hyp:cj-repeated-claims)). 
+
+
+```{r cj-m-PR-comments-agencyFE, fig.cap = "Probability Climate Change/Justice is Added Between Draft and Final Rules by Number of Comments", out.width = "80%", fig.show = "hold"}
+
+knitr::include_graphics(here::here("Figs", "climate-m-PR-comments-agencyFE-1.png"))
+
+knitr::include_graphics(here::here("Figs", "cj-m-PR-comments-agencyFE-1.png"))
+```
+
+
+Figure \@ref(fig:cj-m-PR-agency-top) shows estimated variation in rates of adding CJ to final rules across agencies.
+Agencies with the largest average rates of adding CJ language are the agencies we would expect to be more receptive to CJ claims.  While many agencies make policies that could be framed as "environmental," and all policy decisions have distributive consequences, institutions have norms and procedures that lead policymakers to see problems in different ways. For example, some agencies have dedicated staff and prominent internal guidance on CJ analysis in rulemaking, including the Environmental Protection Agency and the Department of Transportation (which includes the Federal Railroad Administration (FRA),    Federal Motor Carrier Safety Administration (FMCSA), and  Federal Highway Administration (FHWA)). These agencies are among the most responsive to commenters raising CJ concerns. However, differences among agencies are fairly uncertain due to the small number of rules where CJ was added at most agencies. Thus, there is more support for the *Policy Receptivity Hypothesis* (\@ref(hyp:cj-receptivity)) than against it, but differences between agencies with different missions and institutional practices regarding CJ are not clear cut.
+
+
+```{r cj-m-PR-agency-top, fig.cap = "Probability Climate Change/Justice is Added Between Draft and Final Rules by Agency",out.width = "100%"}
+
+knitr::include_graphics(here::here("Figs", "climate-m-PR-agency-top-1.png"))
+
+knitr::include_graphics(here::here("Figs", "cj-m-PR-agency-top-1.png"))
+```
+
+
+

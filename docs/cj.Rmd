@@ -1,0 +1,83 @@
+---
+title: The Climate Justice Movement's Impact on Technocratic Policymaking
+subtitle: 
+author:
+- name: Devin Judge-Lord
+  affiliation: Harvard University
+  footnote: "I will be grateful for any feedback on this draft: [DevinJudgeLord@fas.harvard.edu](mailto:DevinJudgeLord@fas.harvard.edu). Slides and the most recent draft are available at <https://judgelord.github.io/research/ej>. This paper has benefited from comments from Benjamin Márquez, Marcy Shieh, Susan Webb Yackee, Eleanor Powell, David Weimer, participants at the University of Mississippi Political Science Research Colloquium, UW-Madison American Politics Workshop, and 2018 Association for Environmental Studies and Sciences Conference, research assistance from Hope Karnopp, and funding from the National Science Foundation and American Political Science Association."
+  # Additional tables, figures, and replication code are available at <https://judgelord.github.io/dissertation/ej-appendix.html>. 
+date: "`r Sys.Date()`"
+#site: bookdown::bookdown_site
+# documentclass: book
+bibliography: '`r here::here("assets/dissertation.bib")`'
+# biblio-style: apalike
+biblio-style: '`r here::here("assets/apsr.bst")`'
+link-citations: yes
+citecolor: black
+urlcolor: blue
+# endnotes: true # CHANGE THIS BEFORE SUBMISSION
+frontpage: true
+spacing: onehalfspacing
+# github-repo: https://github.com/judgelord/dissertation
+# description: ""
+# keywords: Interest groups, rulemaking, lobbying, bureaucratic politics, data sources
+
+output:
+    bookdown::pdf_document2:
+      template: '../assets/article-template.tex' # redirect to assets 
+      keep_tex: true
+      latex_engine: xelatex
+      citation_package: natbib
+      toc: false
+      fig_caption: true
+      fig.topcaption: true
+      fig.width: 7
+    word_document: default
+header-includes:
+  - \usepackage{floatrow}
+  - \usepackage{float}
+  - \floatsetup[figure]{capposition=top}
+  - \floatsetup[table]{capposition=top}
+---
+
+```{r global.options, include=FALSE}
+source(here::here("code", "setup.R"))
+       
+options(knitr.graphics.auto_pdf = TRUE)
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      cache = FALSE, 
+                      fig.align = 'center',
+                      fig.width = 7,
+                      out.width = "6.5in",
+                      fig.path= "figs/",
+                      fig.show = "hold",
+                      warning=FALSE, 
+                      message=FALSE)
+```
+
+
+\thispagestyle{empty}
+
+<!--
+\singlespacing
+
+\centerline{\textbf{\underline{NOTE TO READER}}}
+The following chapter is part of a dissertation exploring the effects of public pressure on agency rulemaking, a technocratic policy process where “public participation” is usually limited to sophisticated lobbying but occasionally includes millions of people mobilized by public pressure campaigns. Public comment periods on proposed policies purport to provide democratic accountability. Yet theories of bureaucratic policymaking largely ignore the occasional bursts of civic engagement that generate the vast majority of public comments on proposed rules. To fill this gap, I build and test theories about the role of public pressure in policymaking. I collect and analyze millions of public comments to develop the first systematic measures of civic engagement and influence in bureaucratic policymaking. The outline of the dissertation is as follows:  
+
+```{ child = here::here("outline.md")}
+```
+
+-->
+
+
+
+\newpage
+
+\onehalfspacing
+
+\setcounter{page}{1}
+
+
+```{r child = "04-results.Rmd"}
+```

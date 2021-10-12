@@ -1,0 +1,516 @@
+---
+title: "The Climate Movement's Impact on Technocratic Policymaking"
+subtitle: ""
+author: "Devin Judge-Lord <br>  Harvard University"
+date: "Paper, slides, & data: [judgelord.github.io/research/cj](https://judgelord.github.io/research/cj)"
+urlcolor: cyan
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"
+    css: xaringan-themer.css
+    nature:
+      ratio: '16:9'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+# chunks options:
+# hide code and messages by default (warning, message)
+# cache everything 
+knitr::opts_chunk$set(warning = FALSE, 
+                      message = FALSE,
+                      echo = FALSE, 
+                      #fig.path = "Figs/",
+                      cache = FALSE, 
+                      fig.align = 'center',
+                      fig.retina = 2,
+                      dpi = 100)
+# Xaringan: https://slides.yihui.name/xaringan/
+library("xaringan")
+library("xaringanthemer")
+library("here")
+library("tidyverse")
+library(magrittr)
+
+
+style_mono_light(base_color = "#3b444b",
+          link_color = "#B7E4CF",
+          #background_color = "#FAF0E6", # linen
+          header_font_google = google_font("PT Sans"), 
+          text_font_google = google_font("Old Standard"), 
+          text_font_size = "30px",
+          padding = "10px",
+          code_font_google = google_font("Inconsolata"), 
+          code_inline_background_color    = "#F5F5F5", 
+          table_row_even_background_color = "#ddede5",
+          extra_css = 
+            list(".remark-slide-number" = list("display" = "none")))
+
+```
+
+
+# Motivation 
+
+- Climate change touches everything, but most policy processes don't address it
+
+- Policies have disporate effects but policy inconsitantly framed as a distributive justice ("climate justice") issue
+
+- Insider/outside strategies
+
+---
+
+# Findings 
+
+- Climate is rarely addressed in rulemaking, climate justice almost never, despite growing activist demand
+
+- Low-profile policies are more likely to change in response to public pressure
+
+- 
+
+
+
+
+
+
+# The EJ Frame
+
+- Emerged in local campaigns against landfills and DDT
+- Began appearing in federal policy documents in the 1980s
+- A fusion of the American Indian Movement, Chicano movement, farmworker movement, civil rights movement, and union organizing
+
+> People of color [raised] social justice concerns such as self-determination, sovereignty, human rights, social inequality, loss of land base, limited access to natural resources, and disproportionate impacts of environmental hazards and linked them with traditional working-class environmental concerns such as worker rights and worker health and safety to develop an environmental justice agenda. (Taylor 2012, p. 1)
+
+???
+
+Hi, my name is Devin Judge-Lord; I'm a postdoc at Harvard Univ. in the Center for American Politics and Center For the Environment...This paper is the final chapter of my dissertation...As part of a larger project, your input, however far afield, will be helpful...
+
+My work is at the intersection of two literatures that have not had much contact...On the one hand, social movements and civic engagement have long been a core interest of political scientists. We are highly uncertain about the size of effects from actions like letter writing, signing petitions, and protests, but there is little doubt that these things matter at a large enough scale.
+
+On the other hand, bureaucratic policy processes like agency rulemaking are often discussed as if they operate with technocratic rationality. In a sense, mass politics is missing from a lot of the administrative law literature and even from political science theories and formal models of bureaucratic policymaking. 
+
+---
+
+## Do Social Movements Cause Policy Change?
+
+--
+
+**Yes.** (Dahl 1956; Piven & Cloward 1977; Lipsky 1968; Tarrow 1994; Andrews 1997; McAdam 1982, 2001; McAdam & Su 2002, McCammon et al. 2011; Cress & Snow 2000; Weldon 2002)
+
+--
+
+- **Activists shape parties** (Cohen et al. 2008, Schlozman 2015, Skocpol & Williamson 2016)
+
+--
+
+- **Petitioning government builds movements** (Carpenter 2021)
+
+--
+
+- **"From the very beginning, redistributive policies have been associated with social classes and social movements"** (Lowi & Nicholson 2015)
+
+--
+
+- **Protests affect policy** (Gillion 2013) 
+
+--
+
+- **No movement, no policy** (Skocpol 2013)
+
+???
+
+The big question is whether social movements impact policy.
+
+- There is a lot of research on social movements, much of it from sociology, but political scientists tell us that social movements do 
+- shape party agendas
+- that the act of petitioning the government builds power
+- In Lowi's words, redistributive policies have been associated with social classes and movements from the beginning--some kinds of policy only come about when groups form and mobilize to affect policy
+- We don't know a lot about policy outcomes, but there is some great reach showing specific policy effects of civil rights protest, for example.'
+- And as Skocpol found in her study of why climate legislation failed, a movement is often a necessary condition for policy change
+
+
+
+---
+
+
+## Research tends to explain social movement emergence rather than specific impacts (see McAdam 2017) 
+
+- **"limited research on [social movement] influence"** (Andrews & Edwards 2004)
+
+- **The DV is rarely specific policy outcomes or systematic impact**
+
+--
+
+## My DV: Systematic impact on specific policy documents (**agency rules**)
+
+???
+
+Social movement scholars tend to focus on explaining the movement. 
+
+With a few notable exceptions (like Dan Gillion's work on civil rights protests), most scholars are not looking at policy. When they do, they usually focus on a few pieces of landmark legislation.
+
+- I help fill that gap by looking systematically at change in very specific policy documents, agency rules. Agency rules now make up 90% of US law; rulemaking is where the teeth of the law are forged and reforged.
+
+---
+
+## Whom does notice and comment rulemaking empower? 
+
+--
+
+### If groups build the power to pass a Green New Deal, what happens when 30+ agencies write the actual policies? 
+
+--
+
+### Will organized public pressure carry over to agency policymaking? 
+--
+If so, by what mechanisms?
+
+- General level of public attention?
+
+- Specific pressure on issues like EJ?
+
+
+???
+
+So, whom does notice and comment rulemaking empower? 
+
+For example, if a GND is passed, what happens when dozens of agencies write the implementing rules?
+
+Or, consider the opposite. Legislative gridlock continues, but the Biden Harris administration still wants to take major policy action.
+
+- Will organized public pressure carry over to agency policymaking? 
+
+- If so, what kinds of politics are influential. Is it general attention? Is it specific pressure groups like environmental justice activists?
+
+---
+
+## Preview of findings
+
+Framing matters
+
+- policy rarely addresses EJ concerns (across administrations)
+
+- it's much more likely to do so when EJ is raised or when it's in the spotlight
+
+--
+
+Especially for receptive policymakers who have not already taken a position
+
+- With larger coalitions and more public attention, agencies are more likely  📈 to **add** EJ language **where there was none**
+- BUT agencies also anticipate public attention, making **existing** EJ analyses less likely 📉 to **change** on higher-salience rules.
+
+--
+
+HOWEVER, groups raising EJ are "big green" (White) advocacy organizations
+
+---
+
+## Theory: Information is the currency of lobbying.
+
+### Scholars focus on *technical* information (see Yackee 2019)
+
+- Bureaucratic policymaking, especially, is about expertise (Wagner 2010)
+
+--
+
+### Does *political* information matter?
+
+- Coalition size? (Nelson and Yackee 2012 find it does)
+
+- Who is affected? (Lowi would say it should)
+
+- Public pressure/attention? (Balla et al. 2020 find that "legal imperatives trump political considerations")
+
+???
+
+Everything we know about lobbying, especially lobbying in agency rulemaking, tells us that information is the currency of lobbying. 
+
+Information is how you get policymakers to change their minds, especially experts and lawyers.
+
+Indeed, research shows that business groups dominate lobbying in rulemaking because they have the capacity to generate and provide relevant information. 
+
+Thus far, by information, scholars generally mean technical and legal information (see Susan has recent Annual Review of this scholarship)
+
+- I ask about the role of a different kind of information--what we might call political information, building on Nelson and Yackee's finding that coalition size matters, we might also wonder if groups raising distributive claims would matter (Lowi would say so) and whether public pressure or public attention. Here scholarship is skeptical. Balla et al. concluded that mass comment campaigns don't matter "legal imperatives trump political considerations."
+
+---
+
+### *Distributive Information Hypothesis*
+
+> Policymakers are more likely to address distributive justice when groups raise distributive justice concerns.
+
+✅ Pro: "norms and values are set communicatively" (Habermas 1996), "identifying interests" shapes policy (Gellhorn 1972)   
+❌ Con: Bureaucratic policymaking is about "technical expertise" (Epstein, Heidt, and Farina 2014)
+
+--
+
+### *Repeated Information (Coalition Size) Hypothesis*
+
+> Policymakers are more likely to address concerns when more groups raise them.
+
+✅ : "Coalition size" (Nelson and Yackee  2012)    
+❌ : "Informational value" (Epstein, Heidt, and Farina 2014; Gailmard and Patty 2017; Libgober 2018)
+
+???
+
+---
+
+### *Policy Receptivity Hypothesis*
+
+> Policymakers that more frequently address certain concerns will be more responsive to groups raising those concerns.
+
+<!-- "Legibility" (Scott 1998), -->
+✅ : "Opportunity struture" (Marks & McAdam 2007; McAdam 2010) "fit inside the legal narrative" (Scott 1998; Deloria 2009; Delaney 2017)
+
+> "[Political opportunity] must be seen not just in terms of openness (in other words, access to the administration), but also in terms of political receptivity to the claims being made." (Hilson 2002, p. 242)
+
+❌ : "New information" Farina (2018)
+
+---
+
+### *General Pressure Hypothesis*
+
+> Policies are more likely to change when they receive more public attention (e.g., more public comments).
+
+✅ : Gillion (2013), Leech (2010), Skocpol (2013)   
+❌ : Lowery (2013), Balla et al. (2020)
+
+--
+
+### *Conditional Pressure Hypothesis*
+
+> Policies are more likely to address an issue when they receive more public attention (e.g., more public comments) *and* groups raise that issue.
+
+---
+
+
+## Why EJ?
+
+1. Variation in issue framing: "environmental" policy is inconsistently racialized +  inconsistently focused on *distributions* of costs and benefits
+
+--
+
+1. Distinct phrase (few false positives) without many synonyms (few false negatives)
+
+--
+
+1. E.O. 12898 "Federal Actions to Address Environmental Justice."
+--
+--> Administrative Procedures Act lawsuits: 
+> "environmental justice analysis can be reviewed under NEPA and the APA" (*Protect Our Communities Foundation v. Salazar* 2013; *Communities Against Runway Expansion, Inc. v. FAA* 2004)
+
+
+???
+
+Environmental Justice For All Act (2020) introduced by Senator Harris
+
+The day after Biden's executive order was launched, Rep. Cori Bush (D-MO) and Sens. Tammy Duckworth (D-IL) and Ed Markey (D-MA) introduced the Environmental Justice Mapping and Data Collection Act of 2021, which builds on many of the concepts in the executive order and would create a whole-of-government initiative, including data infrastructure and funding to “identify communities most at risk from environmental injustices.”
+
+---
+
+background-image: url(Figs/clinton-ej.jpg)
+background-size: cover
+
+
+`“Addressing disproportionately high and adverse human health or environmental effects of programs, policies, and activities on minority populations and low-income populations.”`
+
+---
+
+## Example of Policy Change: Safe Levels of Mercury 
+--
+(For Whom?)
+
+
+- 2000 Notice: "the U.S. population."
+
+--
+
+- 2002 Draft: Regulated entities + "Other types of entities not listed could also be
+affected."
+
+--
+
+- 2011 Draft: Five pages of EJ analysis of the disparate impacts
+on "vulnerable populations" including "African Americans," "Hispanic,"
+"Native American," and "Other and Multi-racial" groups.
+
+--
+
+- 2012 Final Rule: EJ analysis adds "minority, low income, and indigenous populations."
+--
+
+- 2020 Rollback: "While these communities may experience forgone benefits as a result of this action, the potential forgone [health benefits] are small." 
+--
+⁉️
+
+--
+
+- 2021 Draft: ??
+???
+
+
+
+In addition to who gets what, there is debate over who the whos *are*. What communities exist as groups deserving consideration. 
+
+---
+
+## Data: ~25,000 Policy Documents
+
+12,257 Draft and Final Rule Pairs* across 40 agencies that published rules addressing EJ from 1993-2020
+
+```{r cj-data, fig.show = "hold", out.width = "100%"}
+
+knitr::include_graphics("Figs/climate-data-climatepr-1.png")  
+
+knitr::include_graphics("Figs/cj-data-cjpr-1.png")  
+```
+
+*A few rulemaking dockets have more than one draft or final rule.
+
+---
+
+## Data: ~42,000,000 Public Comments
+
+~4,800,000 (~28,000 unique) comments raise EJ concerns
+
+```{r cj-comments, out.width = "55%"}
+
+knitr::include_graphics("Figs/climate-comments-1.png")
+
+knitr::include_graphics("Figs/cj-comments-1.png")
+```
+
+---
+
+## Data: ~42,000,000 Public Comments
+
+~4,800,000 (~28,000 unique) comments raise EJ concerns
+
+
+```{r percent-match, fig.show = "hold", out.width = "50%", fig.cap="Example: Identifying Coalitions by the Percent of Matching Text in a Sample of Public Comments"}
+
+knitr::include_graphics(here::here("figs", "comment_percent_match_plot.png")  )
+```
+
+
+
+
+---
+
+
+## Results 
+
+```{r table,  out.width = "70%"}
+
+knitr::include_graphics("figs/cj-table.png")
+```
+
+---
+
+## Results: Adding EJ to Policy
+
+```{r cj-m-PR-president-median-1, out.width = "60%"}
+knitr::include_graphics("Figs/cj-m-PR-president-median-1.png")
+```
+
+- ✊🏿 Distributive Information ✅  
+
+---
+
+## Results: Adding EJ to Policy
+
+```{r cj-m-PR-ejcomments-agencyFE,  out.width = "90%"}
+
+
+knitr::include_graphics("Figs/cj-m-PR-ejcomments-agencyFE-1.png")
+
+```
+
+- ✊🏿🔁 Coalition Size ✅  
+
+---
+
+## Results: Adding EJ to Policy
+
+```{r cj-m-PR-comments-agencyFE, out.width = "80%", fig.show = "hold"}
+
+knitr::include_graphics("Figs/cj-m-PR-comments-agencyFE-1.png")
+
+```
+
+- ✊🏿 Distributive Information ✅  
+- 📢 General Public Pressure/Attention ✅  
+- 📢 x ✊🏿 Conditional Public Pressure/Attention ⏪  
+
+
+---
+
+## Results: Changing Existing EJ Language
+
+```{r cj-mejPR-ejcomments-agencyFE, out.width = "90%"}
+
+knitr::include_graphics("Figs/cj-mejPR-ejcomments-agencyFE-1.png")
+```
+
+
+- ✊🏿🔁 Coalition Size ✅    
+
+---
+
+## Results: Changing Existing EJ Language
+
+```{r cj-mejPR-comments, out.width = "80%"}
+
+knitr::include_graphics("Figs/cj-mejPR-comments-agencyFE-1.png")
+```
+
+
+- ✊🏿 Distributive Information ✅  
+- 📢 General Public Pressure/Attention ⏪  
+- 📢 x ✊🏿 Conditional Public Pressure/Attention ❓ 
+
+---
+
+
+## Results: To sum up, yes, movements matter
+
+(even when victories are rare)
+
+|                                            | Add EJ Language | Change EJ Language |
+| ------------------------------------------ | :--: | :--: |
+| ✊🏿 Distributive Information (Comments with EJ Concerns)     | 📈 | 📈 |
+| ✊🏿🔁 Coalition Size           | 📈 | 📈 |
+| 🏛️ Policy Receptivity                             | 📈 | ❓ |
+| 📢 General Public Pressure/Attention               | 📈 | 📉 |
+
+
+<!--| 📢x✊🏿 Specific (Conditional) Pressure            | 📉 | ❓ | -->
+
+With larger coalitions and more public attention, agencies are more likely  📈 to **add** EJ language **where there was none**, BUT agencies also anticipate public attention, making **existing** EJ analyses less likely 📉 to **change** on higher-salience rules.
+
+---
+
+class: inverse
+
+### Thank you!
+
+- Paper, slides, data: [judgelord.github.io/research/ej](judgelord.github.io/research/ej)
+
+### Next Steps
+
+Framing 
+- More on how social movements may impact policy. Petitioning and protest? Lobbying?
+
+Methods
+- Test policy receptivity using rates of addressing EJ out of sample (direct rules & notices)
+- Better measures of policy change
+- Better estimation
+
+Substance
+- Other discursive terms/movements ("climate change"/"racial"/"minority populations"/"low-income"...others?)
+
+-->
