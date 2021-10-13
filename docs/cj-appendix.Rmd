@@ -115,9 +115,7 @@ clean_summary <- . %>%
 #   str_squish() 
 
 # summary vars
-cj_comments %<>%
-  mutate(docket_id = str_remove(id, "-[0-9]*$") ) %>% 
-  clean_summary()
+
 
 cjPR %<>% clean_summary()
 
@@ -135,6 +133,17 @@ rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"),
   group_by(document_type, docket_id) %>%
   slice_max(number_of_comments_received)
 
+
+# Clean comments (subset to rulemaking dockets)
+cj_comments %<>%
+  mutate(docket_id = str_remove(id, "-[0-9]*$") ) %>% 
+  filter(docket_id %in% rules$docket_id) %>% 
+  clean_summary() 
+  
+climatecomments %<>%
+  mutate(docket_id = str_remove(id, "-[0-9]*$") ) %>% 
+  filter(docket_id %in% rules$docket_id) %>% 
+  clean_summary() 
 
 # make summary vars for main data
 rules %<>% 
@@ -182,6 +191,11 @@ rules %<>% dplyr::select(docket_id,
                  year,
                  Year) %>%
   distinct()
+
+
+
+
+
 ```
 
 ### Documents
@@ -274,22 +288,32 @@ cjFR %>%
         panel.border = element_blank())
 
 cjFR %>% dplyr::select(id, summary) %>% kablebox()
-
 ```
 
 ---
 
-## Comments Ignored
+
+## Comments that Agencies Ignored
 
 
 ```{r}
 load(here::here("data", "cjcomments.Rdata"))
 
-cjcomments %<>% clean_summary() %>% rename(CJ_text = summary)
+cjcomments %<>%
+  mutate(docket_id = str_remove(id, "-[0-9]*$") ) %>% 
+  filter(docket_id %in% rules$docket_id) %>% 
+  clean_summary()  %>% 
+  rename(CJ_text = summary)
+
+
 
 load(here::here("data", "ejcommentsnew.Rdata"))
 
-ejcommentsnew %<>% clean_summary() %>% rename(EJ_text = summary)
+ejcommentsnew%<>%
+  mutate(docket_id = str_remove(id, "-[0-9]*$") ) %>% 
+  filter(docket_id %in% rules$docket_id) %>% 
+  clean_summary()  %>% 
+  rename(EJ_text = summary)
 
 cj_comments %>%
   mutate(organization = coalesce(organization, title)) %>% 
@@ -350,6 +374,41 @@ allFR <- rules %>%
   mutate(direct = ifelse(docket_id %in% allPR$docket_id, "Draft Rule Published", "Direct to Final Rule"))
 
 cj_comments$number_of_comments_received %<>% replace_na(0) 
+
+
+# Broken out by climate + ej
+allFR %<>% mutate(climate_comment = docket_id %in% climatecomments$docket_id,
+         ej_comment = docket_id %in% ejcommentsnew$docket_id) %>% 
+  mutate(ccej_comment = ifelse(climate_comment & ej_comment,
+                       "Both",
+                       "One"),
+         ccej_comment = ifelse(ej_comment & !climate_comment,
+                       "EJ",
+                       ccej_comment),
+         ccej_comment = ifelse(!ej_comment & climate_comment,
+                       "Climate",
+                       ccej_comment)
+                       )
+
+climatedockets <- climateFR$docket_id
+
+allFR %<>% mutate(
+  climateFR = docket_id %in% climatedockets,
+  ejFR = docket_id %in% ejFRnew$docket_id) %>% 
+  mutate(ccejFR = ifelse(climateFR & ejFR,
+                       "Both",
+                       "Neither"),
+         ccejFR = ifelse(ejFR & !climateFR,
+                       "Environmental Justice",
+                       ccejFR),
+         ccejFR = ifelse(!ejFR & climateFR,
+                       "Climate Change",
+                       ccejFR)
+                       )
+
+#allFR %>% filter(ccejFR == "One")
+
+
 ```
 
 Dockets by total number of comments
@@ -368,8 +427,8 @@ Subsetting to agencies that pubished at least one rule explicitly addressing Cli
 
 ```{r cj-data-agencies}
 #cj-data-agencies
-breaks <-  c("`16", 
-             "`00", "`04", "`08", "`20")
+breaks <-  c(#"`00",
+             "`04", "`08", "`12","`16",  "`20")
 
 allFR %>%
   filter(year > 2004) %>%
@@ -383,12 +442,23 @@ allFR %>%
        y = "")+ 
   scale_fill_discrete()+#direction = -1) + 
   scale_x_discrete(breaks = breaks ) 
+
+allFR %>% 
+  #filter(agency_cj_comments > 100 | agency_cj_rules > 10 | agency == "FEMA", year > 2004) %>% 
+  ggplot() + 
+  aes(x = Year, fill = factor(ccejFR)) +
+  facet_wrap("agency", scales = "free_y") +
+  geom_bar(alpha = .7) + 
+  labs(fill = "Climate Change and/or\n Environmental Justice \nin Final Rule",
+       y = "Number of Rules") + 
+  scale_x_discrete(breaks = breaks ) + 
+  scale_fill_viridis_d(direction = 1, option = "plasma",end = .9)
 ```
 
 ### Agencies that received at least 100 unique Climate Justice comments
 
 
-```{r cj-data-agencies100}
+```{r cj-data-agencies100, fig.height=2.5, fig.width=5.5}
 # cj-data-agencies100
 
 breaks <-  c("`16", "`12", 
@@ -405,8 +475,21 @@ allFR %>%
   geom_bar(alpha = .7) + 
   labs(fill = "\"Climate Justice\"\nin Final Rule",
        y = "Number of Rules") + 
-
   scale_x_discrete(breaks = breaks ) 
+
+# broken out 
+
+allFR %>% 
+  filter(agency_cj_comments > 100 | agency_cj_rules > 10 | agency == "FEMA",
+         year > 2004) %>%
+    ggplot() + 
+  aes(x = Year, fill = factor(ccejFR)) +
+  facet_wrap("agency", scales = "free_y") +
+  geom_bar(alpha = .7) + 
+  labs(fill = "Climate Change and/or\n Environmental Justice \nin Final Rule",
+       y = "Number of Rules") + 
+  scale_x_discrete(breaks = breaks ) + 
+  scale_fill_viridis_d(direction = 1, option = "plasma",end = .9)
 ```
 
 

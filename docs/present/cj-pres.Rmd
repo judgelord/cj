@@ -64,13 +64,54 @@ style_mono_light(base_color = "#3b444b",
 
 ---
 
+# Example Ignored Comments
+
+`Texas’ participation in the Cross-State Air Pollution Rule’s (CSAPR) trading program for ozone-season NOX qualifies as an alternative to BART. We are approving Texas’ determination that its EGUs are not subject to BART for particulate matter (PM).` EJ section only mentions SO2, not NOX or PM
+
+`Climate change may also have an effect on the outdoor air pollutant concentrations, especially ozone.` - [EartheJustice et al]` (https://www.regulations.gov/comment/EPA-R06-OAR-2016-0611-0083)
+
+
+???
+The EPA believes that this action does not have disproportionately high and adverse human health or environmental effects on minority populations, low- income populations and/or indigenous peoples, as specified in Executive Order 12898 (59 FR 7629, February 16, 1994). We have determined that this rule will not have disproportionately high and adverse human health or environmental effects on minority or low-income populations because it increases the level of environmental protection for all affected populations without having any disproportionately high and adverse human health or environmental effects on any population, including any minority or low-income population. The rule limits emissions of SO
+
+
+???
+Bernard, S., Samet, JM, Grambsch, A, Ebi,KL, and Romieu, I, The Potential Impacts of Climate Variability and Change on Air Pollution-Related Health Effects in the United States. Environmental Health Perspectives 2001. 109(Supplement 2): p. 199-209.
+
+
+---
+
+# Example: Comments on EJ Policy without attention Climate
+
+Nondiscrimination in Programs or Activities Receiving Federal Assistance from the Environmental Protection Agency, EPA-HQ-OA-2013-0031 (33k comments)
+
+`We write, collectively, to emphasize the urgent need for OCR to apply its scarce resources to the critical environmental problems affecting countless communities, rather than weakening civil rights enforcement by eliminating key deadlines and increasing agency discretion.`
+
+`Climate change and policies related to climate change also raise significant issues of civil rights compliance and enforcement. See, e.g., Envtl. Justice Leadership Forum on Climate Change, Environmental Justice State Guidance: How to Incorporate Equity & Justice into Your State Clean Power Planning Approach (2016) available at www.ejleadershipforum.org" - Jacqueline Smith, NAACP Environmental and Climate Justice Committee`
+
+`incorporate civil rights more broadly into the agency’s actions`
+
+`See, e.g., Ctr. on Race, Poverty & the Env’t. et al., Climate Justice Comments on Carbon Pollution Emission Guidelines for Existing Stationary Sources: Electric Utility Generating Units, Docket No. EPA- HQ-OAR-2013-0602 at 2, 7-8 (Dec. 1, 2014) (calling for EPA to address its Title VI obligation by proposing additional regulatory language as part of the Clean Power rule that directs each state to include federally enforceable provisions in its state to ensure compliance with Title VI and requiring EPA to make a finding that state plans ensure such compliance when EPA reviews the plans).`
+
+???
+
+http://www.ejleadershipforum.org/wp- content/uploads/2016/01/EJ-State-Guidance-updated-March-7.pdf.
+
+
+EPA-HQ-OA-2013-0031-0084	
+
+EPA received several adverse comments about this proposed amendment; especially regarding the proposal to remove numeric deadlines from the administrative complaint processing regulations. The EPA has considered all comments received. Although the EPA continues to believe that the proposed amendments, including the elimination of the numeric deadlines, are needed in order to better position the EPA to strategically manage and individually tailor resolution approaches to its administrative investigation of complaints and compliance reviews, the EPA has decided to withdraw the proposed amendments. - EPA-HQ-OA-2013-0031-0097
+
+
+---
+
 # Findings 
 
 - Climate is rarely addressed in rulemaking, climate justice almost never, despite growing activist demand
 
 - Low-profile policies are more likely to change in response to public pressure
 
-- 
+- less than 20% of rules mentioning climate change, also mention climate justice or environmental justice
 
 
 
