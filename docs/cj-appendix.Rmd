@@ -449,7 +449,7 @@ allFR %>%
   aes(x = Year, fill = factor(ccejFR)) +
   facet_wrap("agency", scales = "free_y") +
   geom_bar(alpha = .7) + 
-  labs(fill = "Climate Change and/or\n Environmental Justice \nin Final Rule",
+  labs(fill = "Climate Change and/or\nEnvironmental Justice\nin Final Rule",
        y = "Number of Rules") + 
   scale_x_discrete(breaks = breaks ) + 
   scale_fill_viridis_d(direction = 1, option = "plasma",end = .9)
@@ -486,7 +486,7 @@ allFR %>%
   aes(x = Year, fill = factor(ccejFR)) +
   facet_wrap("agency", scales = "free_y") +
   geom_bar(alpha = .7) + 
-  labs(fill = "Climate Change and/or\n Environmental Justice \nin Final Rule",
+  labs(fill = "Climate Change and/or\nEnvironmental Justice\nin Final Rule",
        y = "Number of Rules") + 
   scale_x_discrete(breaks = breaks ) + 
   scale_fill_viridis_d(direction = 1, option = "plasma",end = .9)

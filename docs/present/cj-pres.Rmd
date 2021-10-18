@@ -1,5 +1,5 @@
 ---
-title: "The Climate Movement's Impact on Technocratic Policymaking"
+title: "The Climate Movement's Impact on Technocratic Policymaking in U.S. Federal Agencies"
 subtitle: ""
 author: "Devin Judge-Lord <br>  Harvard University"
 date: "Paper, slides, & data: [judgelord.github.io/research/cj](https://judgelord.github.io/research/cj)"
@@ -68,14 +68,13 @@ style_mono_light(base_color = "#3b444b",
 
 `Texas’ participation in the Cross-State Air Pollution Rule’s (CSAPR) trading program for ozone-season NOX qualifies as an alternative to BART. We are approving Texas’ determination that its EGUs are not subject to BART for particulate matter (PM).` EJ section only mentions SO2, not NOX or PM
 
-`Climate change may also have an effect on the outdoor air pollutant concentrations, especially ozone.` - [EartheJustice et al]` (https://www.regulations.gov/comment/EPA-R06-OAR-2016-0611-0083)
+`Climate change may also have an effect on the outdoor air pollutant concentrations, especially ozone.` - [EartheJustice et al] (https://www.regulations.gov/comment/EPA-R06-OAR-2016-0611-0083)
 
 
 ???
+
 The EPA believes that this action does not have disproportionately high and adverse human health or environmental effects on minority populations, low- income populations and/or indigenous peoples, as specified in Executive Order 12898 (59 FR 7629, February 16, 1994). We have determined that this rule will not have disproportionately high and adverse human health or environmental effects on minority or low-income populations because it increases the level of environmental protection for all affected populations without having any disproportionately high and adverse human health or environmental effects on any population, including any minority or low-income population. The rule limits emissions of SO
 
-
-???
 Bernard, S., Samet, JM, Grambsch, A, Ebi,KL, and Romieu, I, The Potential Impacts of Climate Variability and Change on Air Pollution-Related Health Effects in the United States. Environmental Health Perspectives 2001. 109(Supplement 2): p. 199-209.
 
 
@@ -105,18 +104,188 @@ EPA received several adverse comments about this proposed amendment; especially 
 
 ---
 
-# Findings 
+# Preview of Findings 
 
-- Climate is rarely addressed in rulemaking, climate justice almost never, despite growing activist demand
+- From 2005-2020, only 8% of rules addressed climate change and only 2% addressed climate justice, despite growing activist demand
+
+--
+
+- Nearly half of all public comments from mentioned climate change
+
+--
+
+- Less than 20% of policies and 8% of comments mentioning climate change also mention environmental justice
+
+--
+
+- Policymakers are much more responsive to concerns about climate change than EJ or CJ
+
+--
 
 - Low-profile policies are more likely to change in response to public pressure
 
-- less than 20% of rules mentioning climate change, also mention climate justice or environmental justice
+
+
+---
+
+## Data: 10,910 final rules from 24 agencies
+
+```{r cj-data-agencies100, out.width = "90%"}
+
+knitr::include_graphics("Figs/cj-data-agencies100-2.png")
+```
+
+---
+
+```{r cj-data-agencies, out.width = "90%"}
+
+knitr::include_graphics("Figs/cj-data-agencies-2.png")
+```
+
+---
+
+## Data: 39,392,957 public comments
+
+- 45%, 17,857,018 (421,880 unique) raise "climate change"
+
+- 8%, 3,248,697 (2,138 unique) also mention environmental justice or cimate justice
+
+- 82% of all comments raising EJ also mention climate change, but only 14% of unique comments raising EJ also mention climate change
 
 
 
 
+---
 
+## Methods: Unique and duplicate comments
+
+
+```{r percent-match, fig.show = "hold", out.width = "57%", fig.cap="Example: Identifying Coalitions by the Percent of Matching Text in a Sample of Public Comments"}
+
+knitr::include_graphics("Figs/comment_percent_match_plot.png")
+```
+
+---
+
+## Methods: Hand-coded coalions and policy change
+
+```{r datasheet, fig.show = "hold", out.width = "100%", fig.cap="Example: Identifying Coalitions by Hand"}
+
+knitr::include_graphics("Figs/datasheet.png")
+```
+
+---
+
+## Methods: Comments on draft rules that did and did not address climate/EJ/CJ
+
+```{r climate-comments, out.width = "75%"}
+
+knitr::include_graphics("Figs/climate-comments-1.png")
+```
+
+---
+
+## Methods: Comments on draft rules that did and did not address climate/EJ/CJ
+
+```{r cj-comments, out.width = "75%"}
+knitr::include_graphics("Figs/cj-comments-1.png")
+```
+
+
+---
+
+
+## Results 
+
+```{r table,  out.width = "70%"}
+
+knitr::include_graphics("Figs/cj-table.png")
+```
+
+---
+
+## Results: Adding Climate and EJ to Policy
+
+```{r cj-m-PR-president-median-1, out.width = "60%"}
+knitr::include_graphics("Figs/cj-m-PR-president-median-1.png")
+```
+
+- ✊🏿 Distributive Information ✅  
+
+---
+
+## Results: Adding Climate and EJ issues to Policy Documents
+
+```{r cj-m-PR-cjcomments-agencyFE,  out.width = "90%"}
+
+
+knitr::include_graphics("Figs/cj-m-PR-cjcomments-agencyFE-1.png")
+
+```
+
+- ✊🏿🔁 Coalition Size ✅  
+
+---
+
+## Results: Adding Climate and EJ issues to Policy Documents
+
+```{r cj-m-PR-comments-agencyFE, out.width = "80%", fig.show = "hold"}
+
+knitr::include_graphics("Figs/cj-m-PR-comments-agencyFE-1.png")
+
+```
+
+- ✊🏿 Distributive Information ✅  
+- 📢 General Public Pressure/Attention ✅  
+- 📢 x ✊🏿 Conditional Public Pressure/Attention ⏪  
+
+
+
+
+## Results: To sum up, yes, movements matter
+
+(even when victories are rare)
+
+|                                            | Add EJ Language | Change EJ Language |
+| ------------------------------------------ | :--: | :--: |
+| ✊🏿 Distributive Information (Comments with EJ Concerns)     | 📈 | 📈 |
+| ✊🏿🔁 Coalition Size           | 📈 | 📈 |
+| 🏛️ Policy Receptivity                             | 📈 | ❓ |
+| 📢 General Public Pressure/Attention               | 📈 | 📉 |
+
+
+<!--| 📢x✊🏿 Specific (Conditional) Pressure            | 📉 | ❓ | -->
+
+With larger coalitions and more public attention, agencies are more likely  📈 to **add** EJ language **where there was none**, BUT agencies also anticipate public attention, making **existing** EJ analyses less likely 📉 to **change** on higher-salience rules.
+
+---
+
+class: inverse
+
+### Thank you!
+
+- Paper, slides, data: [judgelord.github.io/research/ej](judgelord.github.io/research/ej)
+
+### Next Steps
+
+Framing 
+- More on how social movements may impact policy. Petitioning and protest? Lobbying?
+
+Methods
+- Test policy receptivity using rates of addressing EJ out of sample (direct rules & notices)
+- Better measures of policy change
+- Better estimation
+
+Substance
+- Other discursive terms/movements ("climate change"/"racial"/"minority populations"/"low-income"...others?)
+
+-->
+
+---
+
+# EXTRA
+
+---
 
 # The EJ Frame
 
@@ -418,7 +587,7 @@ knitr::include_graphics("Figs/cj-data-cjpr-1.png")
 
 ~4,800,000 (~28,000 unique) comments raise EJ concerns
 
-```{r cj-comments, out.width = "55%"}
+```{r cc-cj-comments, out.width = "55%"}
 
 knitr::include_graphics("Figs/climate-comments-1.png")
 
@@ -431,70 +600,13 @@ knitr::include_graphics("Figs/cj-comments-1.png")
 
 ~4,800,000 (~28,000 unique) comments raise EJ concerns
 
-
-```{r percent-match, fig.show = "hold", out.width = "50%", fig.cap="Example: Identifying Coalitions by the Percent of Matching Text in a Sample of Public Comments"}
-
-knitr::include_graphics(here::here("figs", "comment_percent_match_plot.png")  )
-```
-
-
-
-
----
-
-
-## Results 
-
-```{r table,  out.width = "70%"}
-
-knitr::include_graphics("figs/cj-table.png")
-```
-
----
-
-## Results: Adding EJ to Policy
-
-```{r cj-m-PR-president-median-1, out.width = "60%"}
-knitr::include_graphics("Figs/cj-m-PR-president-median-1.png")
-```
-
-- ✊🏿 Distributive Information ✅  
-
----
-
-## Results: Adding EJ to Policy
-
-```{r cj-m-PR-ejcomments-agencyFE,  out.width = "90%"}
-
-
-knitr::include_graphics("Figs/cj-m-PR-ejcomments-agencyFE-1.png")
-
-```
-
-- ✊🏿🔁 Coalition Size ✅  
-
----
-
-## Results: Adding EJ to Policy
-
-```{r cj-m-PR-comments-agencyFE, out.width = "80%", fig.show = "hold"}
-
-knitr::include_graphics("Figs/cj-m-PR-comments-agencyFE-1.png")
-
-```
-
-- ✊🏿 Distributive Information ✅  
-- 📢 General Public Pressure/Attention ✅  
-- 📢 x ✊🏿 Conditional Public Pressure/Attention ⏪  
-
-
 ---
 
 ## Results: Changing Existing EJ Language
 
-```{r cj-mejPR-ejcomments-agencyFE, out.width = "90%"}
+```{r cj-mcjPR-cjcomments-agencyFE, out.width = "90%"}
 
-knitr::include_graphics("Figs/cj-mejPR-ejcomments-agencyFE-1.png")
+knitr::include_graphics("Figs/cj-mcjPR-cj-comments-agencyFE-1.png")
 ```
 
 
@@ -504,9 +616,9 @@ knitr::include_graphics("Figs/cj-mejPR-ejcomments-agencyFE-1.png")
 
 ## Results: Changing Existing EJ Language
 
-```{r cj-mejPR-comments, out.width = "80%"}
+```{r cj-mcjPR-comments, out.width = "80%"}
 
-knitr::include_graphics("Figs/cj-mejPR-comments-agencyFE-1.png")
+knitr::include_graphics("Figs/cj-mcjPR-comments-agencyFE-1.png")
 ```
 
 
@@ -517,41 +629,13 @@ knitr::include_graphics("Figs/cj-mejPR-comments-agencyFE-1.png")
 ---
 
 
-## Results: To sum up, yes, movements matter
+```{r percent-match2, eval=FALSE, fig.show = "hold", out.width = "50%", fig.cap="Example: Identifying Coalitions by the Percent of Matching Text in a Sample of Public Comments"}
 
-(even when victories are rare)
-
-|                                            | Add EJ Language | Change EJ Language |
-| ------------------------------------------ | :--: | :--: |
-| ✊🏿 Distributive Information (Comments with EJ Concerns)     | 📈 | 📈 |
-| ✊🏿🔁 Coalition Size           | 📈 | 📈 |
-| 🏛️ Policy Receptivity                             | 📈 | ❓ |
-| 📢 General Public Pressure/Attention               | 📈 | 📉 |
+knitr::include_graphics("Figs/comment_percent_match_plot.png")
+```
 
 
-<!--| 📢x✊🏿 Specific (Conditional) Pressure            | 📉 | ❓ | -->
 
-With larger coalitions and more public attention, agencies are more likely  📈 to **add** EJ language **where there was none**, BUT agencies also anticipate public attention, making **existing** EJ analyses less likely 📉 to **change** on higher-salience rules.
 
 ---
 
-class: inverse
-
-### Thank you!
-
-- Paper, slides, data: [judgelord.github.io/research/ej](judgelord.github.io/research/ej)
-
-### Next Steps
-
-Framing 
-- More on how social movements may impact policy. Petitioning and protest? Lobbying?
-
-Methods
-- Test policy receptivity using rates of addressing EJ out of sample (direct rules & notices)
-- Better measures of policy change
-- Better estimation
-
-Substance
-- Other discursive terms/movements ("climate change"/"racial"/"minority populations"/"low-income"...others?)
-
--->
