@@ -1075,7 +1075,8 @@ coord_flip() +
         panel.grid.major.y = element_blank()) 
 ```
 
-```{r climate-m-PR-climatecomments-agencyFE, fig.width=6, fig.height=2.5}
+
+```{r climate-m-PR-climatecomments-agencyFE, fig.width=5, fig.height=2.5}
 # climate-m-PR-climatecomments-agencyFE
 
 # A data frame of values at which to estimate probabilities:

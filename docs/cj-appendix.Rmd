@@ -380,7 +380,7 @@ cj_comments$number_of_comments_received %<>% replace_na(0)
 allFR %<>% mutate(climate_comment = docket_id %in% climatecomments$docket_id,
          ej_comment = docket_id %in% ejcommentsnew$docket_id) %>% 
   mutate(ccej_comment = ifelse(climate_comment & ej_comment,
-                       "Both",
+                       "Both CC & EJ",
                        "One"),
          ccej_comment = ifelse(ej_comment & !climate_comment,
                        "EJ",
@@ -396,7 +396,7 @@ allFR %<>% mutate(
   climateFR = docket_id %in% climatedockets,
   ejFR = docket_id %in% ejFRnew$docket_id) %>% 
   mutate(ccejFR = ifelse(climateFR & ejFR,
-                       "Both",
+                       "Both CC & EJ",
                        "Neither"),
          ccejFR = ifelse(ejFR & !climateFR,
                        "Environmental Justice",
@@ -619,7 +619,7 @@ cj_orgs <- cj_comments %>%
 
 # total from top 100 cj_orgs
 cj_orgs %<>% 
-  filter(!str_dct(org_name, "unknown|404error|broken link|anonymous|knowwho")) 
+  filter(!str_dct(org_name, "unknown|404error|broken link|anonymous|knowwho|^individual|^Dr\\.")) 
 
 
 # FORMAT FOR PRESENTATION 
@@ -627,7 +627,7 @@ cj_orgs %<>% mutate(org_name = ifelse(nchar(org_name)<10, str_to_upper(org_name)
 
 cj_orgs_summary <- cj_orgs %>% 
   ungroup() %>%
-  filter(!str_dct(org_name, "^NA$|unknown|individuals|n/a|^N$")) %>%
+  filter(!str_dct(org_name, "^NA$|unknown|individual|n/a|^N$")) %>%
   arrange(-Dockets)   %>% 
   rename(Organization = org_name, 
          `Unique Climate Justice Comments` = unique,
@@ -1009,7 +1009,7 @@ tidy(m_PR_agency) %>% kablebox()
 ```
 
 ### Predicted Probabilies by Agency
-```{r cj-m-PR-agency, fig.height=9}
+```{r cj-m-PR-agency, fig.height=6}
 # cj-m-PR-agency
 
 # A data frame of values at which to estimate probabilities:
@@ -1062,7 +1062,7 @@ predicted %>%
 
 Agencies with at least 300 comments on proposed rules that did not mention climate justice (i.e., agencies where at least some of the rules in this dataset saw comments) and at least 3 rules where comments raised Climate Justice concerns (i.e., agencies where Climate is somewhat salient). 
 
-```{r cj-m-PR-agency-top, fig.width=7}
+```{r cj-m-PR-agency-top, fig.width=5, fig.height=3.5}
 # cj-m-PR-agency-top
 
 cjFR_PR %>% group_by(agency) %>% count(agency, agency_cj_comments,sum(comments) )  %>%   kablebox()
@@ -1102,7 +1102,7 @@ labs(y = 'Probability that "Climate Justice"\nis Added to Final Rule',
 
 A more selective subset: Agencies that have at least 500 comments on proposed rules that did not mention climate justice (i.e., agencies where at least some of the rules in this dataset saw more than a few comments) and at least 50 rules where comments raised Climate Justice concerns (i.e., agencies where Climate is somewhat salient). 
 
-```{r cj-m-PR-agency-toptop, fig.height=3, , fig.width=6}
+```{r cj-m-PR-agency-toptop, fig.height=3, , fig.width=5}
 # cj-m-PR-agency-toptop
 
 # slightly more selective, requiring 100 comments

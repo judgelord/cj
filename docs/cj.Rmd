@@ -1,10 +1,10 @@
 ---
-title: The Climate Justice Movement's Impact on Technocratic Policymaking
+title: The Climate Movement's Impact on Technocratic Policymaking
 subtitle: 
 author:
 - name: Devin Judge-Lord
   affiliation: Harvard University
-  footnote: "I will be grateful for any feedback on this draft: [DevinJudgeLord@fas.harvard.edu](mailto:DevinJudgeLord@fas.harvard.edu). Slides and the most recent draft are available at <https://judgelord.github.io/research/ej>. This paper has benefited from comments from Benjamin Márquez, Marcy Shieh, Susan Webb Yackee, Eleanor Powell, David Weimer, participants at the University of Mississippi Political Science Research Colloquium, UW-Madison American Politics Workshop, and 2018 Association for Environmental Studies and Sciences Conference, research assistance from Hope Karnopp, and funding from the National Science Foundation and American Political Science Association."
+  footnote: "I will be grateful for any feedback on this early draft: [DevinJudgeLord@fas.harvard.edu](mailto:DevinJudgeLord@fas.harvard.edu). Slides and the most recent draft are available at <https://judgelord.github.io/research/cj>. This paper has benefited from funding from the National Science Foundation and American Political Science Association."
   # Additional tables, figures, and replication code are available at <https://judgelord.github.io/dissertation/ej-appendix.html>. 
 date: "`r Sys.Date()`"
 #site: bookdown::bookdown_site
