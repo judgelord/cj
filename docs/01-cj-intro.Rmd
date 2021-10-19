@@ -1,0 +1,125 @@
+In 2013, the U.S. Envirionmental Protection Agency (EPA) under President Obama published a draft policy (a "proposed rule") approving of Navajo Nation's plan to impliment Regional Haze Requirments of the Clean Air Act (including sulfer dioxide, nitrogen oxides, and particulate matter regulations that aim to limit to hazardous ozone pollution). EPA's proposed rule mentioned neither "climate change" nor "environmental justice" (concerns about the uneven distribution of environmental harms).
+In response to 421 public comments citeing science showing how rising temperatures would affect ozone formation and raising climate justice concerns, the final rule added nine paragraphs on how EPA was addressing environmental justice concderns but only a brief and dismissive mention of climate change: 
+
+> "EPA agrees that climate change is an important issue...Although regulation of greenhouse gases is conducted under separate statutory requirements from regional haze..."
+
+
+In 2017 the EPA under President Trump published a similar proposed rule approving of Texas's plan to impliment Regional Haze Requirments. This proposed rule also made no mention of climate change, but it did include a short paragraph on environmental justice concerns. This paragraph only discussed the sulfer dioxide part of the regulations, with no mention of how the policy would affect uneven exposure to pollution related to nitrogen oxides and particulate matter. Again, environmetnal groups, including EathJustice, submitted comments citing studies showing how climate change would affect outdoor air pollutant concentrations, especially ozone. While this rule only recieved 61 comments, this is many times the average.
+This time, however, EPA made no modifications to the environmental justice section and no mention of climate change in the final rule. 
+<!--
+ "Texas' participation in the Cross-State Air Pollution Rule’s (CSAPR) trading program for ozone-season NOX qualifies as an alternative to BART. We are approving Texas’ determination that its EGUs are not subject to BART for particulate matter (PM)."
+
+Comment from EarthJustice et al.: 
+
+> "Climate change may also have an effect on the outdoor air pollutant concentrations, especially ozone."
+
+The final rule makes no mention of climate change and no change to the EJ section.
+
+???
+
+[EartheJustice et al.] (https://www.regulations.gov/comment/EPA-R06-OAR-2016-0611-0083)
+
+The EPA believes that this action does not have disproportionately high and adverse human health or environmental effects on minority populations, low-income populations, and/or indigenous peoples, as specified in Executive Order 12898 (59 FR 7629, February 16, 1994). We have determined that this rule will not have disproportionately high and adverse human health or environmental effects on minority or low-income populations because it increases the level of environmental protection for all affected populations without having any disproportionately high and adverse human health or environmental effects on any population, including any minority or low-income population. The rule limits emissions of SO
+
+Bernard, S., Samet, JM, Grambsch, A, Ebi,KL, and Romieu, I, The Potential Impacts of Climate Variability and Change on Air Pollution-Related Health Effects in the United States. Environmental Health Perspectives 2001. 109(Supplement 2): p. 199-209.
+-->
+
+
+These examples illustrate several ways in which the policy process may vary. Decades of research have shown that air pollution is unevenly distributed and that its effects will change with a changing climate. Yet, technocratic policymakers may or may not see climatic changes or distributive effects relevent to their particular tasks and regulations. Many of these tasks are rooted in laws last modified many decades ago. Some policymakers and political conditions be receptive to groups raising climate change or distributive justice concerns and others may not. This variation in receptivity to scientific and legal claims may have several causes. 
+
+When the agenda of elected officials is hostile to a cause, they and their deputies may ignore demands. The Obama EPA was sympathetic to climate and climate justice concerns while the Trump EPA ignored them. However, presidential agendas do not explain everyting: despite the Obama administration's concern for climate change, many policies that could have incorporated climate science did not. Conversely, despite the Trump administration's draft rule raised environmental justice concerns before commenters demanded it. 
+
+With or without landmark legislation, most U.S. climate policy will continue to be made in dozens of federal agencies, some of which have a longer histroy of making "climate" policy.
+Officials at the EPA are exceptionally well-versed in climate change and environmental justice. The EPA makes a great deal of climate-relavent policy and has an entier office dedicated to environmental justice. How receptive are other agencies that have not historically been tasked with making climate policy? 
+
+Despite a growing scholarship on the politics of clamate policy [e.g. @Mildenberger2020], we have little systematic data on the extent to which the issues of climate change and climate justice have gained tracktion accross the vast US bureaucrtacy. How large is a presidential administration's efect on bureaucratic policymaking? 
+To what extent do government officials resond to pressure to address climate change and environmental justice? To what extent does the scale of public pressure shape whether policymakers engage with or ignore activist demands? 
+
+
+This paper begins to fill this gap by providing a systematic look across thousands of policies that do and do not address climate change and climate justice. I assess variation in how policy documents address climate change and climate justice. I also exploit this variation to assess the exent to which they change (or fail to change) in response to public comments raising climate and climate justice issues. 
+
+Both the broad climate movement and more specic climate justice movement aim to advance specific issue frames.
+Climate change affects nearly everything, but policy is inconsistently framed as "climate policy"--a major task for climate activists is thus getting government officials to consider climate change to be relevant to their work (from health and agriculture policy to finance and trade policy). Likewise, nearly all policies have disparate effects, but climate policy is inconsistently framed as a distributive justice ("climate justice") issue. 
+
+
+--
+
+- 
+
+--
+
+- A lack of public pressure is a key cause of legislative failure [@Skocpol2013].
+
+
+- Whom does agency rulemaking empower? 
+
+  - Who raises climate change and climate justice issues?
+  
+  - Who tends to win?
+
+- How receptive are different institutions to public pressure on climate and climate justice issues? 
+
+  - How much does presidential support or hostility affect agency policymaking? 
+
+  - Are bureaucracies with more experience more receptive? 
+
+---
+
+
+### If groups build the power to pass a Green New Deal, what happens when 30+ agencies write the actual policies? 
+
+--
+
+### Will organized public pressure carry over to agency policymaking? 
+--
+If so, by what mechanisms?
+
+- General levels of public attention to policymaking?
+
+- Specific pressure to adopt a climate justice frame?
+
+- Which parts of government are most likely to be moved? 
+
+---
+
+
+## Preview of Findings 
+
+- From 2005 to 2020, less than 8% of relevant agency rules addressed climate change, and only 2% addressed climate justice, despite growing activist demand
+
+--
+
+- Nearly half of all public comments mentioned climate change
+
+--
+
+- Less than 20% of rules and 8% of comments mentioning climate change also mention environmental justice, nearly all mobilized by 5 "Big Greens"
+
+--
+
+- Policymakers are much more responsive to concerns about climate change than EJ or CJ
+
+--
+
+- Low-profile policies are more likely to change in response to public pressure
+
+???
+
+6 Big Green groups, along with CREDO Action and Democracy For America (Howard Dean's campaign organization), ran all campaigns raising CJ issues and mobilized nearly all CJ comments. 
+
+CREDO	2	2	221557
+Sierra Club	10	29	149621
+Earthjustice	8	9	144559
+NRDC	5	5	99813
+PEW	3	3	63771
+Defenders Of Wildlife	3	3	14700
+Democracy For America	1	1	4426
+Center For Biological Diversity	30	33	150
+
+---
+
+
+
+
+
+

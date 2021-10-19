@@ -5,17 +5,15 @@ author:
 - name: Devin Judge-Lord
   affiliation: Harvard University
   footnote: "I will be grateful for any feedback on this early draft: [DevinJudgeLord@fas.harvard.edu](mailto:DevinJudgeLord@fas.harvard.edu). Slides and the most recent draft are available at <https://judgelord.github.io/research/cj>. This paper has benefited from funding from the National Science Foundation and American Political Science Association."
-  # Additional tables, figures, and replication code are available at <https://judgelord.github.io/dissertation/ej-appendix.html>. 
+  # Additional tables, figures, and replication code are available at <https://judgelord.github.io/dissertation/cj-appendix.html>. 
 date: "`r Sys.Date()`"
-#site: bookdown::bookdown_site
-# documentclass: book
+abstract: | 
+  `r readLines(here::here("docs", "cj-abstract.text"))`
 bibliography: '`r here::here("assets/dissertation.bib")`'
-# biblio-style: apalike
 biblio-style: '`r here::here("assets/apsr.bst")`'
 link-citations: yes
 citecolor: black
 urlcolor: blue
-# endnotes: true # CHANGE THIS BEFORE SUBMISSION
 frontpage: true
 spacing: onehalfspacing
 # github-repo: https://github.com/judgelord/dissertation
@@ -79,5 +77,5 @@ The following chapter is part of a dissertation exploring the effects of public 
 \setcounter{page}{1}
 
 
-```{r child = "04-results.Rmd"}
+```{r child = "04-cj-results.Rmd"}
 ```

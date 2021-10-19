@@ -114,4 +114,14 @@ knitr::include_graphics(here::here("Figs", "cj-m-PR-agency-top-1.png"))
 ```
 
 
+# Conclusion
+
+Social movements play a critical role in advancing landmark statutes that recognize new rights and social values. Likewise, lack of movement pressure is a leading explanation for the failure of policy efforts. 
+
+This paper provids uniquely systematic evidence about the impact of the climate and climate justice movements on the thousands of climate-relevant policies that governments make every year.
+Leveraging a new dataset of thousands of draft and final policies and millions public comments on these policies, I show that when public comments raise climate change or climate justice concerns, these concerns are more likely to be addressed in the final rule. Effect sizes vary across agencies, possibly due to the extent that climate change as an issue frame aligns with the institutional histories and roles in which policymakers see themselves. 
+
+The magnitude of public pressure matters. When more groups and individuals raise climate and climate justice concerns, policy texts are more likely to change, even when controlling for overall levels of public attention. These findings suggest that distributive justice claims, levels of public attention, and levels of public pressure all systematically affect policymaking. Finally, public comments offer a new lens to assess the rise and impact of the climate justice movement within the broader environmental justice movement.
+
+Interest group lobbying in government agencies drives U.S. environmental policy. Yet, many leading theories of policy change remain untested in the context of agency rulemaking. Do coalitions between businesses and unions that have blocked legislative efforts on climate issues also block rulemaking? Are deregulatory interests systematically advantaged over environmental advocates in rulemaking? Does the scale of public pressure or the attention of legislators constrain interest group influence? This paper has made some intital steps toward addressing these questions. The new dataset will allow scholars to map interest groups' influence and policy ideas across agencies. Future work may systematically addresses who participates in environmental policymaking and the societal and ideological constituencies they represent, the legal and environmental ideas at stake, and the influence of competing coalitions and ideas on policy. The knowledge gained through a systematic study of climate-relevant rulemaking will inform policy, advocacy strategies, and ongoing reforms of the rulemaking process itself. 
 

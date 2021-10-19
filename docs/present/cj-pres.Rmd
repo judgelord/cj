@@ -59,20 +59,20 @@ style_mono_light(base_color = "#3b444b",
 
 # Motivation 
 
-- Climate change affects nearly everything, but policy is inconsistantly framed as "climate policy"
+- Climate change affects nearly everything, but policy is inconsistently framed as "climate policy"
 
 --
 
-- Nearly all policies have disporate effects, but climate policy is inconsitantly framed as a distributive justice ("climate justice") issue
+- Nearly all policies have disparate effects, but climate policy is inconsistently framed as a distributive justice ("climate justice") issue
 
 
 --
 
-- With or without landmark legislaton, most U.S. climate policy will continue to be made in federal agencies
+- With or without landmark legislation, most U.S. climate policy will continue to be made in federal agencies
 
 --
 
-- A lack of public pressure is key cause of legislative failure (Skocpol 2013)
+- A lack of public pressure is a key cause of legislative failure (Skocpol 2013)
 
 ---
 
@@ -101,18 +101,18 @@ style_mono_light(base_color = "#3b444b",
 --
 If so, by what mechanisms?
 
-- General levels of public attention?
+- General levels of public attention to policymaking?
 
 - Specific pressure to adopt a climate justice frame?
 
-- Which parts of government are most likley to be moved? 
+- Which parts of government are most likely to be moved? 
 
 ---
 
 
 ## Preview of Findings 
 
-- From 2005 to 2020, less than 8% of relevant agency rules addressed climate change and only 2% addressed climate justice, despite growing activist demand
+- From 2005 to 2020, less than 8% of relevant agency rules addressed climate change, and only 2% addressed climate justice, despite growing activist demand
 
 --
 
@@ -132,7 +132,7 @@ If so, by what mechanisms?
 
 ???
 
-6 Big Green groups along with CREDO Action and Democracy For America (Howard Dean's campaign organization) ran all campaings raising CJ issues and mobilized nearly all cj comments. 
+6 Big Green groups, along with CREDO Action and Democracy For America (Howard Dean's campaign organization), ran all campaigns raising CJ issues and mobilized nearly all CJ comments. 
 
 CREDO	2	2	221557
 Sierra Club	10	29	149621
@@ -154,9 +154,12 @@ Center For Biological Diversity	30	33	150
 
 2013 Obama EPA proposed rule: *Air Quality State Implementation Plans; Approvals and Promulgations: Navajo Nation; Regional Haze Requirements for Navajo Generating Station* mentions neither climate change nor environmental justice.
 
-In response to comments raising climate justice concerns, the final rule add 9 paragraphs on environmental justice and a brief mention of climate change: 
+In response to comments raising climate justice concerns, the final rule added nine paragraphs on environmental justice and a brief mention of climate change: 
 
-> "EPA agrees that climate change is an important issue...Although regulation of greenhouse gases is conducted under separate statutory requirements from regional haze, EPA is mindful that this BART determination for NGS is not the only regulatory program that affects this facility and the region."
+> "EPA agrees that climate change is an important issue...Although regulation of greenhouse gases is conducted under separate statutory requirements from regional haze"
+
+
+<!--, EPA is mindful that this BART determination for NGS is not the only regulatory program that affects this facility and the region."-->
 
 ---
 
@@ -172,14 +175,14 @@ Comment from EarthJustice et al.:
 
 > "Climate change may also have an effect on the outdoor air pollutant concentrations, especially ozone."
 
-Final rule makes no mention of climate change and no change to EJ section.
+The final rule makes no mention of climate change and no change to the EJ section.
 
 
 ???
 
-[EartheJustice et al] (https://www.regulations.gov/comment/EPA-R06-OAR-2016-0611-0083)
+[EartheJustice et al.] (https://www.regulations.gov/comment/EPA-R06-OAR-2016-0611-0083)
 
-The EPA believes that this action does not have disproportionately high and adverse human health or environmental effects on minority populations, low- income populations and/or indigenous peoples, as specified in Executive Order 12898 (59 FR 7629, February 16, 1994). We have determined that this rule will not have disproportionately high and adverse human health or environmental effects on minority or low-income populations because it increases the level of environmental protection for all affected populations without having any disproportionately high and adverse human health or environmental effects on any population, including any minority or low-income population. The rule limits emissions of SO
+The EPA believes that this action does not have disproportionately high and adverse human health or environmental effects on minority populations, low-income populations, and/or indigenous peoples, as specified in Executive Order 12898 (59 FR 7629, February 16, 1994). We have determined that this rule will not have disproportionately high and adverse human health or environmental effects on minority or low-income populations because it increases the level of environmental protection for all affected populations without having any disproportionately high and adverse human health or environmental effects on any population, including any minority or low-income population. The rule limits emissions of SO
 
 Bernard, S., Samet, JM, Grambsch, A, Ebi,KL, and Romieu, I, The Potential Impacts of Climate Variability and Change on Air Pollution-Related Health Effects in the United States. Environmental Health Perspectives 2001. 109(Supplement 2): p. 199-209.
 
@@ -227,7 +230,7 @@ knitr::include_graphics("Figs/comment_percent_match_plot.png")
 
 ---
 
-## Methods: Hand-coded coalions and policy change
+## Methods: Hand-coded coalitions and policy change
 
 ```{r datasheet, fig.show = "hold", out.width = "100%", fig.cap="Example: Identifying Coalitions by Hand"}
 
@@ -264,7 +267,17 @@ knitr::include_graphics("Figs/cj-table.png")
 
 ---
 
-## Results: Adding Climate and EJ to Policy
+## Results: Adding Climate Change to Policy
+
+```{r climate-m-PR-president-median-1, out.width = "60%"}
+knitr::include_graphics("Figs/climate-m-PR-president-median-1.png")
+```
+
+- 🔬 Scientific Information ✅  
+
+---
+
+## Results: Adding Climate Justice to Policy
 
 ```{r cj-m-PR-president-median-1, out.width = "60%"}
 knitr::include_graphics("Figs/cj-m-PR-president-median-1.png")
@@ -274,7 +287,21 @@ knitr::include_graphics("Figs/cj-m-PR-president-median-1.png")
 
 ---
 
-## Results: Adding Climate and EJ issues to Policy Documents
+## Results: Adding Climate Change to Policy 
+
+```{r climate-m-PR-climatecomments-agencyFE,  out.width = "90%"}
+
+
+knitr::include_graphics("Figs/climate-m-PR-climatecomments-agencyFE-1.png")
+
+```
+
+- 🔬🔁 Coalition Size ✅  
+
+
+---
+
+## Results: Adding Climate Justice to Policy 
 
 ```{r cj-m-PR-cjcomments-agencyFE,  out.width = "90%"}
 
@@ -287,7 +314,23 @@ knitr::include_graphics("Figs/cj-m-PR-cjcomments-agencyFE-1.png")
 
 ---
 
-## Results: Adding Climate and EJ issues to Policy Documents
+## Results: Adding Climate Change to Policy
+
+```{r climate-m-PR-comments-agencyFE, out.width = "80%", fig.show = "hold"}
+
+knitr::include_graphics("Figs/climate-m-PR-comments-agencyFE-1.png")
+
+```
+
+- 🔬 Scientific Information ✅  
+- 📢 General Public Pressure/Attention ✅  
+- 📢 x 🔬 Conditional Public Pressure/Attention ⏪  
+
+---
+
+---
+
+## Results: Adding Climate Justice issues to Policy
 
 ```{r cj-m-PR-comments-agencyFE, out.width = "80%", fig.show = "hold"}
 
@@ -299,19 +342,20 @@ knitr::include_graphics("Figs/cj-m-PR-comments-agencyFE-1.png")
 - 📢 General Public Pressure/Attention ✅  
 - 📢 x ✊🏿 Conditional Public Pressure/Attention ⏪  
 
-
+---
 
 
 ## Results: To sum up, yes, movements matter
 
 (even when victories are rare)
 
-|                                            | Add EJ Language | Change EJ Language |
+|                                            | Add Language
 | ------------------------------------------ | :--: | :--: |
-| ✊🏿 Distributive Information (Comments with EJ Concerns)     | 📈 | 📈 |
-| ✊🏿🔁 Coalition Size           | 📈 | 📈 |
-| 🏛️ Policy Receptivity                             | 📈 | ❓ |
-| 📢 General Public Pressure/Attention               | 📈 | 📉 |
+| 🔬 Scientific Information (Climate Concerns)  | 📈 |
+| ✊🏿 Distributive Information (EJ/CJ Concerns)     | 📈 | 
+| 🔬/✊🏿🔁 Coalition Size           | 📈 | 
+| 🏛️ Policy Receptivity                             | 📈 |
+| 📢 General Public Pressure/Attention               | 📈 | 
 
 
 <!--| 📢x✊🏿 Specific (Conditional) Pressure            | 📉 | ❓ | -->
@@ -336,8 +380,10 @@ class: inverse
 - Better (hand-coded) measures of policy change
 - Better estimation
 
+<!--
 
 ---
+
 
 # EXTRA
 
@@ -695,7 +741,7 @@ knitr::include_graphics("Figs/comment_percent_match_plot.png")
 
 ---
 
-## Example: Comments on a draft rule that addressed EJ without attention climate
+## Example: Comments on a draft rule that addressed EJ without attention to climate
 
 [Nondiscrimination in Programs or Activities Receiving Federal Assistance from the Environmental Protection Agency](https://www.regulations.gov/document/EPA-HQ-OA-2013-0031-0097) (33k comments)
 
@@ -719,8 +765,7 @@ See, e.g., Ctr. on Race, Poverty & the Env’t. et al., Climate Justice Comments
 
 EPA-HQ-OA-2013-0031-0084	
 
-EPA received several adverse comments about this proposed amendment; especially regarding the proposal to remove numeric deadlines from the administrative complaint processing regulations. The EPA has considered all comments received. Although the EPA continues to believe that the proposed amendments, including the elimination of the numeric deadlines, are needed in order to better position the EPA to strategically manage and individually tailor resolution approaches to its administrative investigation of complaints and compliance reviews, the EPA has decided to withdraw the proposed amendments. - EPA-HQ-OA-2013-0031-0097
+EPA received several adverse comments about this proposed amendment, especially regarding the proposal to remove numeric deadlines from the administrative complaint processing regulations. The EPA has considered all comments received. Although the EPA continues to believe that the proposed amendments, including the elimination of the numeric deadlines, are needed in order to better position the EPA to strategically manage and individually tailor resolution approaches to its administrative investigation of complaints and compliance reviews, the EPA has decided to withdraw the proposed amendments. - EPA-HQ-OA-2013-0031-0097
 
 ---
-
 

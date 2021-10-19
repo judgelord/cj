@@ -1,0 +1,13 @@
+# Theory: Information as the Currency of Lobbying
+
+
+Whether or not it explicitly addresses climate change, nearly all federal policy relevant to climate chnage has been made in the executive branch. 
+
+If the U.S. Congress passes major climate legislation, it will require a massive amount of agency rulemaking. A Green New Deal, carbon pricing scheme, or plan to mitigate solar radiation--any legislative initiative--would undoubtedly task dozens of agencies with writing and implementing rules. Indeed, the specific legal requirements in agency rules often matter more than the statute itself.
+Alternatively, if legislative gridlock continues, U.S. climate policy will continue to be made as it has for decades: by the executive-branch agencies tasked with interpreting and reinterpreting landmark statutes [@Freeman2014]. For example, in just one of many climate-related executive orders, President Obama ordered 30 agencies, from the Army Corps of Engineers to the Department of Agriculture, to make "changes to policies, programs, and regulations...to manage climate risks", leading to thousands of pages of new legal requirements. 
+
+Agency rulemaking is the executive branch's primary policymaking vehicle [@Yackee2009RegGov]. Lobbying the bureaucracy is thus a major way to affect the content of public policy [@Yackee2006JPART; @Yackee2019] and thus a main avenue of policy advocacy for regulated interests [@Gordon2018; @Yackee2006JOP], activists [@Coglianese2001; @judgelord2019SPSA], and even legislators [@Judge-Lord2018APSA; @Ritchie2018].
+
+<!-- PROBLEM: political scientists have not focused on bureaucratic politics -->
+
+While rulemaking is a major focus of environmental law scholarship, political scientists have largely ignored it (instead focusing on electoral politics and legislative policymaking). In part because rulemaking is understudied, environmental politics has a small profile in the American Politics subfield. To the extent that American Politics scholars have answered calls to address the climate crisis [@Levin2012; @Javeline2014], they have focused on public opinion [@Mildenberger2015; @Boussalis2016], the emergence of social movements [@Mcadam2017], explaining variation among states and local governments [@Hughes2012; @Stokes2020], and explaining the results of lobbying efforts in Congress [@Skocpol2013; @Mildenberger2020; @Ganz2019]. 
