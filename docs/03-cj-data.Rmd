@@ -1,66 +1,124 @@
 # Data, Research Design, and Descriptive Results
 
-To assess the extent to which technical and distributive justice claims related to climate change have gained traction in the policy process, I conduct parallell analysis of two subsets of data. First, I identify all U.S. federal agencies that published one or more final rules that addressed climate change and collect all draft and final policies each published between 2005 and 2020. I then collect all public comments submitted on these draft policies. Second, I identify a narrower subset of agencies that published one or more federal rules that addressed "climate justice" (including policies that mentioned both "climate change" and "environmental justice"). 
+To assess the extent to which technical and distributive justice claims related to climate change have gained traction in the policy process, I conduct parallel analyses of two subsets of data. First, I identify all U.S. federal agencies that published one or more final rules that addressed climate change and collect all draft and final policies that each agency published between 2005 and 2020. I then collect all public comments submitted on these draft policies. Second, I identify a narrower subset of agencies that published one or more federal rules that addressed "climate justice" (including policies that mentioned both "climate change" and "environmental justice"). 
 
 This approach yields 21,190 policy documents (7,819 proposed and final rule pairs) from 24 agencies. I collected all 39,392,957 public comments filed on these draft policies, many of which are duplicates, more akin to petition signatures (more on this below).
 
-This dataset allows several types of analysis. First, I descriptively compare the portion of policies that address climate change and climate justice across agencies and presidential administrations. Second, I select proposed and final rule pairs where the draft rule did not address climate change (or climate justice) and estimate the probability that the final rule does when comments do and do not raise climate or climate justice concerns. Finally, [and not yet in this draft] I hand code public comments, grouping them into coalitions and assessing the extent to which each coalition got what they wanted in the change between draft and final rule.
+This dataset allows several types of analysis. First, I descriptively compare the portion of policies that address climate change and climate justice across agencies and presidential administrations. Second, I select proposed and final rule pairs where the draft rule did not address climate change (or climate justice) and estimate the probability that the final rule does when comments do and do not raise climate or climate justice concerns. Finally [and not yet in this draft], I hand-code public comments, grouping them into coalitions and assessing the extent to which each coalition got what they wanted in the change between draft and final rule.
 
 
-## Attention to climate change and climate justice accross institutions and time
+## Attention to climate change and climate justice across institutions and time
 
-Figure \@ref(fig:cj-data-agencies-2) shows the extent to which final rules published at various federal agencies addressed climate change, environmental justice, or both (i.e. climate justice).
+Figure \@ref(fig:cj-data-agencies-2) shows the extent to which final rules published at various federal agencies addressed climate change, environmental justice, or both (i.e., climate justice).
 
 
-```{r cj-data-agencies, out.width = "90%"}
-
+```{r cj-data-agencies, out.width = "100%"}
 knitr::include_graphics(here::here("Figs/cj-data-agencies-2.png"))
 ```
 
-### Attention to climate change and climage justice in public comments
+##Measuring Public Pressure and Political Information {#why-methods}
 
-In sharp contrast to the proportion of policies addressing climate change, an astounding 45% (17,857,018) of all public comments recieved by these 24 agencies mention climate change. In part, this reflects the interests of the small number of interest groups that organize public pressure campaigns (see @whymail). However, this sample includes 421,880 unique comments raise "climate change."
+In this section, I describe methods developed in @whymail to identify public pressure campaigns and measure the kinds of political information they create. These measures
+capture similar statistics to questions posed by @Verba1987 [p. 9]: "How
+much participation is there, what kind is it, and from what segments of society does it come?"
+Specifically, I assess the extent to which public comments are mobilized by pressure campaigns, which organizations are behind these campaigns, and which campaigns are more successful in mobilizing.
 
-Table \@ref(tab:climate-orgs) shows the top mobilizers of public comments rasing climate climate change. The "Dockets" column indicates the number of rulemakings on which each group commented. The Center for Biological Diversity raised climate change on nearly 700 rulemaking dockets. 
+
+### Identifying Organizations and Coalitions using Text Reuse {#reuse}
+
+The primary unit of analysis is a lobbying coalition---a group of organizations advocating for the same policy changes in their comments on a draft rule. 
+Advocacy organizations work together on campaigns. For example, Save our Environment submitted both sophisticated comments and collected signatures from hundreds of thousands of people on several rulemaking dockets. Save our Environment is a small nonprofit with a simple WordPress website almost entirely dedicated to mobilizing public comments. It is run by The Partnership Project, a coalition of 20 of the largest environmental advocacy organizations in the United States, including the Sierra Club, Natural Resources Defense Council, Greenpeace, and the World Wildlife Fund, with the aim of "harnessing the power of the internet to increase public awareness and activism on today's most important environmental issues" [@Saveourenvironment]. Several Partnership Project members, including the Sierra Club, EarthJustice, and NRDC, also submitted technical comments and mobilized hundreds of thousands of their own supporters to comment separately on the same rules.  These lobbying and mobilizing activities are not independent campaigns. These organizations and the people they mobilize are a coalition.
+
+To mobilize broader support, advocacy organizations often engage smaller organizations, which, in turn, mobilize their own members and supporters, often with logistical support and funding from the larger national organization. For example, for the same campaign where the Gulf Restoration Network mobilized hundreds of restaurants that serve sustainable seafood, one of their larger coalition partners, the Pew Charitable Trusts, mobilized thousands of individuals, including members of the New York Underwater Photography Society. These smaller organizations did not identify themselves as part of Pew's campaign, but their letters used almost identical language.
+
+<!-- step 1 portion from campaigns-->
+Identifying which people and organizations belong to which coalition is thus a crucial first task for any study of public pressure campaigns.
+To identify whether a pressure campaign mobilizes a given comment, I use several strategies.
+ I first use textual similarity to identify
+clusters of similar comments, reflecting formal and informal coalitions.
+Comments with identical text indicate a coordinated campaign. 
+
+To link individual comments and public pressure campaigns to the more sophisticated lobbying efforts that they support (if any), I identify the lobbying coalition(s) (if any) to which each comment belongs. Some individual commenters and organizations are unaffiliated with a broader lobbying coalition, but, as I show below, most people and organizations lobby in broader coalitions.
+
+Importantly, even
+campaigns that achieve very low public response rates appear in these
+data. Because campaigns aim to collect many thousands of comments, it is
+implausible that even the most unpopular position would achieve no
+supportive responses. For example, @Potter2017 found Poultry Producers
+averaging only 319 comments per campaign. While this is far from the
+Sierra Club's average of 17,325 comments per campaign, it is also far
+from zero. (These numbers are from Potter's sample of EPA rules.)
+
+For each comment on a rulemaking docket, I identify the percent of words it shares with other comments using a 10-word (or
+"10-gram") moving window function, looping over each
+possible pair of texts to identify matches.^[For more about n-gram window functions and comparisons with related partial matching methods such as the Smith-Waterman algorithm, see @Casas2017 and @Judge-Lord2017.]
+When actors sign onto the same comment, it is clear that they are
+lobbying together. However, various businesses, advocacy groups, and
+citizens often comment separately, even when they are aligned. Text-reuse (using the same ten-word phrases) captures this alignment. When individuals use identical wording, I interpret that to mean they're endorsing the same policy position as part of a lobbying coalition.
+
+Figure \@ref(fig:percent-match) shows the percent of shared text for a sample of 50 comments on the same rule. Comments are arranged by the document identifier assigned by regulations.gov on both axes. 
+The black on the diagonal indicates that each document has a perfect overlap with itself. Black squares off the diagonal indicate additional pairs of identical documents. For example, 100 percent of the words from Comment 95976 are part of some tengram that also appears in 95977 because the exact same comment was uploaded twice. 
+The cluster of grey tiles indicates a coalition of commenters using some identical text.
+Comments 91130 through 91156 are all partial or exact matches. All are part of a mass comment campaign. The percent of identical text is lower than many mass-comment campaigns because these are hand-written comments, but the n-gram method still picks up overlap in the OCRed text in the header and footer. Tengrams that appear in 100 or more comments indicate a mass comment campaign. Some agencies use similar "de-duping" software [@Rinfret2021] and only provide a representative sample comment. In these cases, my linking method assumes that the example comment is representative, and I link these comments to others based on the text of the sample comment provided.
+
+```{r percent-match, fig.show = "hold", out.width = "100%", fig.cap="Example: Identifying Coalitions by the Percent of Matching Text in a Sample of Public Comments"}
+
+knitr::include_graphics(here::here("figs", "comment_percent_match_plot.png")  )
+```
+
+Where a new presidential administration solicited comments on a proposed rule tied to a docket number that a previous administration also used to solicit comments on a different previous rule, I count these as separate rulemaking dockets. I do so because the second policy is usually reversing or going in the opposite direction as the policy on which the previous administration solicited comments. Many of the same organizations comment but with the opposite positions; support becomes opposition and vice versa.
+
+## Attention to climate change and climate justice in public comments
+
+In sharp contrast to the proportion of policies addressing climate change, an astounding 45% (17,857,018) of all public comments received by these 24 agencies mention climate change. In part, this reflects the interests of the small number of interest groups that organize public pressure campaigns (see @whymail). However, this sample of comments mentioning climate change also includes 421,880 unique comments (comments that did not repeat 10-word phrases with other comments).
+
+Table \@ref(tab:climate-orgs) shows the top mobilizers of public comments raising climate change. The "Dockets" column indicates the number of rulemakings on which each group commented. The "Unique Climate Comments" column shows the number of comments submitted or explicitly mobilized by each organization that do not copy text from other comments. The "Total Climate Comments" column shows the total number of comments, including duplicates. The Center for Biological Diversity, a national nonprofit advocacy organization, raised climate change on hundreds of rulemaking dockets and mobilized thousands of supporters to comment, both independently and through petition-like form-letter campaigns.
 
 ```{r climate-orgs}
 load(here::here("data", "climateorgs_summary.Rdata"))
 
 climateorgs_summary %>% 
   arrange(-`Total Climate Comments`) %>% 
-  kablebox() 
+  kable3() 
 ```
 
-Public comments raising concerns about climate change rarely discuss environmental justice. Only 8% of all comments mentioning climate change (3,248,697) and less than 1% of unique comments mentionting climate change (2,138) also mention environmental justice or cimate justice.
+Public comments raising concerns about climate change rarely discuss environmental justice. Only 8% of all comments mentioning climate change (3,248,697) and less than 1% of unique comments mentioning climate change (2,138) also mention environmental justice or climate justice.
 
-As noted in @ej, the vast majority of public comments raising environmental justice concerns were mobilized by national environmental groups, not from frontline community groups. Likely because of this, mass comments raising EJ concerns also raise climate change. 82% of all comments raising EJ also mention climate change. However, unique (non-mass) comments show a different pattern: only 14% of unique comments that raise EJ also mention climate change. This difference reflects differences in capacities and interests between local EJ groups and national environmental organizations: national organizations have the resources and capacity to mobilize pressure campaigns while local EJ groups do not. National environmental groups are also much more likey to discuss climate change than local groups. 
+As noted in @ej, the vast majority of public comments raising environmental justice concerns were mobilized by national environmental groups, not from frontline community groups. Likely because of this, mass comments raising EJ concerns also raise climate change. 82% of all comments raising EJ also mention climate change. However, unique (non-mass) comments show a different pattern: only 14% of unique comments that raise EJ also mention climate change. This difference reflects differences in capacities and interests between local EJ groups and national environmental organizations: national organizations have the resources and capacity to mobilize pressure campaigns while local EJ groups do not. National environmental groups are also much more likely to discuss climate change than local groups. 
 
-Table \@ref(tab:cj-orgs) shows the top mobilizers of public comments rasing climate justice issues (including "climate change" + "environmental justice"). Despite the small portion of comments mentioning climate change that these comments represent, nearly all of these organizations are the same as the top climate mobilizers seen in \@ref(tab:climate-orgs). The Center for Biological Diversity, which primarily focuses on endangered species is the organization most frequently raising EJ or CJ concerns. Indeed, a lage number of these comments are on draft rules on endangered species published by the Fish and Wildlife Service. While the ecological protections through Endangered Species Act listings often have disporate effects, these are not the policies typically highlighted by frontline environmental justice and climate justice communities. 
+Table \@ref(tab:cj-orgs) shows the top mobilizers of public comments raising climate justice issues (including "climate change" + "environmental justice"). Despite the small portion of comments mentioning climate change that these comments represent, many of these organizations are the same as the top climate mobilizers seen in \@ref(tab:climate-orgs). Only nine organizations, all large national advocacy organizations, are responsible for all public pressure campaigns rasing climate justice. CREDO Action, a generic progressive advocacy organization, mobilized the most comments raising climate justice issues. The Center for Biological Diversity, which primarily focuses on endangered species, is the organization that raised climate justice concerns on the most rulemaking dockets. Indeed, a large number of these comments are on draft rules on endangered species published by the Fish and Wildlife Service. While the ecological protections through Endangered Species Act listings often have disparate effects, these are not the policies typically highlighted by frontline environmental justice and climate justice communities. 
+
+Despite being dwarfed by large national advocacy organizations, local environmental justice groups are active participants in agency rulemaking [@ej]. Assessing public input regarding climate change and climate justice, however, frontline groups are distinctly absent. 
+Of the top 20 organizations most frequently raising climate justice issues (Table \@ref(tab:cj-orgs), only the Southern Environmental Law Center has a sub-national environmental justice focus. The Sierra Club, EarthJustice, and others have program arms and often partner with frontline community groups on campaigns. The American Petroleum Institute (the main industry association for the oil and gas industry) and Edison Electric Institute (a major industry association for electric utilities) appear in Table \@ref(tab:cj-orgs) because their long and sophisticated technical comments opposing climate policy occasionally quote policy texts that mention climate change and environmental justice. 
+
+
+
 
 ```{r cj-orgs}
 load(here::here("data", "cj_orgs_summary.Rdata"))
+
 cj_orgs_summary %>% 
   filter(Organization != "Individual") %>% 
   arrange(-`Total Climate Justice Comments`) %>% 
-  kablebox() 
+  kable3() 
 ```
 
 ### Astroturf
 
-Astroturf campaigns mentioning climate change were rare. None of the top 50 organzations that mobilized comments on behalf of carbon-intensive industry, and only a few of the top 100 mobilizing organizations opposed climate policy. The largest campaign opposing climate policy to use the phrase "climate change"  was organized by Energy Citizens, a front group for the American Petrolium Institute. Energy Citizens mobilized only seven thousand comments, a relativly small number compared to campaigns sponsored by public interest groups (see @whymail for more on Energy Citizens adovocay tactics and why public interest campaings often mobilize more people). 
+Astroturf campaigns mentioning climate change were rare. None of the top 50 organizations that mobilized comments on behalf of carbon-intensive industry, and only a few of the top 100 mobilizing organizations opposed climate policy. The largest campaign opposing climate policy to use the phrase "climate change"  was organized by Energy Citizens, a front group for the American Petroleum Institute. Energy Citizens mobilized only seven thousand comments, a relatively small number compared to campaigns sponsored by public interest groups that often mobilized hundreds of thousands of comments (see @whymail for more on Energy Citizens advocacy tactics and why public interest campaigns often mobilize more people). 
 
-The lack of astroturf in these data have at least two causes. First, groups opposing climate policy are less likely to use the "climate change" issue frame. Indeed, my research design aims to capture advocats of making policy with a climate change or climate justice frame, it is unlikely to capture campaings opposing climate policy. Second, astroturf campaings account for a very small portion of public comments in federal agency rulemaking [@whymail].
+The lack of astroturf in these data has at least two causes. First, groups opposing climate policy are less likely to use the "climate change" issue frame. Indeed, my research design aims to capture advocates of policymaking with a climate change or climate justice frame. It is unlikely to capture campaigns opposing climate policy. Second, astroturf campaigns account for a very small portion of public comments in federal agency rulemaking [@whymail].
 
 
 ## Comments on draft rules that did and did not address climate
 
-The stastical results in the following section leverage variation in whether final rules mention climate change or climate justice. Specifically, I select draft and final rule pairs where the draft rule did not address climate change (or climate justice) and compare cases where the final rule did or did not. Figures \@ref(fig:climate-comments) and \@ref(fig:cj-comments) show draft and final rule pairs over time, faceted by whether the Climate (or CJ) are addressed in the final but not the draft (the top row), in both the draft and the final (the middle row), or in neither the draft nor the final (the bottom row). The stastical anslyis compare cases in the top and bottom rows to assess whether groups raising Climate (or CJ) issues or the number of public comments makes agencies more likely to add responsive language to the final rule.  
+The statistical results in the following section leverage variation in whether final rules mention climate change or climate justice. Specifically, I select draft and final rule pairs where the draft rule did not address climate change (or climate justice) and compare cases where the final rule did or did not. Figures \@ref(fig:climate-comments) and \@ref(fig:cj-comments) show draft and final rule pairs over time, faceted by whether climate (or climate justice) is addressed in the final but not the draft (the top row), in both the draft and the final (the middle row), or in neither the draft nor the final (the bottom row). The statistical analyses compare cases in the top and bottom rows to assess whether groups raising climate (or climate justice) issues or the number of public comments makes agencies more likely to add responsive language to the final rule.  
 
-```{r climate-comments, out.width = "75%"}
+```{r climate-comments, out.width = "100%"}
 knitr::include_graphics(here::here("Figs/climate-comments-1.png"))
 ```
 
-```{r cj-comments, out.width = "75%"}
+```{r cj-comments, out.width = "100%"}
 knitr::include_graphics(here::here("Figs/cj-comments-1.png"))
 ```
 
