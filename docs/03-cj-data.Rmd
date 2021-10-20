@@ -1,0 +1,66 @@
+# Data, Research Design, and Descriptive Results
+
+To assess the extent to which technical and distributive justice claims related to climate change have gained traction in the policy process, I conduct parallell analysis of two subsets of data. First, I identify all U.S. federal agencies that published one or more final rules that addressed climate change and collect all draft and final policies each published between 2005 and 2020. I then collect all public comments submitted on these draft policies. Second, I identify a narrower subset of agencies that published one or more federal rules that addressed "climate justice" (including policies that mentioned both "climate change" and "environmental justice"). 
+
+This approach yields 21,190 policy documents (7,819 proposed and final rule pairs) from 24 agencies. I collected all 39,392,957 public comments filed on these draft policies, many of which are duplicates, more akin to petition signatures (more on this below).
+
+This dataset allows several types of analysis. First, I descriptively compare the portion of policies that address climate change and climate justice across agencies and presidential administrations. Second, I select proposed and final rule pairs where the draft rule did not address climate change (or climate justice) and estimate the probability that the final rule does when comments do and do not raise climate or climate justice concerns. Finally, [and not yet in this draft] I hand code public comments, grouping them into coalitions and assessing the extent to which each coalition got what they wanted in the change between draft and final rule.
+
+
+## Attention to climate change and climate justice accross institutions and time
+
+Figure \@ref(fig:cj-data-agencies-2) shows the extent to which final rules published at various federal agencies addressed climate change, environmental justice, or both (i.e. climate justice).
+
+
+```{r cj-data-agencies, out.width = "90%"}
+
+knitr::include_graphics(here::here("Figs/cj-data-agencies-2.png"))
+```
+
+### Attention to climate change and climage justice in public comments
+
+In sharp contrast to the proportion of policies addressing climate change, an astounding 45% (17,857,018) of all public comments recieved by these 24 agencies mention climate change. In part, this reflects the interests of the small number of interest groups that organize public pressure campaigns (see @whymail). However, this sample includes 421,880 unique comments raise "climate change."
+
+Table \@ref(tab:climate-orgs) shows the top mobilizers of public comments rasing climate climate change. The "Dockets" column indicates the number of rulemakings on which each group commented. The Center for Biological Diversity raised climate change on nearly 700 rulemaking dockets. 
+
+```{r climate-orgs}
+load(here::here("data", "climateorgs_summary.Rdata"))
+
+climateorgs_summary %>% 
+  arrange(-`Total Climate Comments`) %>% 
+  kablebox() 
+```
+
+Public comments raising concerns about climate change rarely discuss environmental justice. Only 8% of all comments mentioning climate change (3,248,697) and less than 1% of unique comments mentionting climate change (2,138) also mention environmental justice or cimate justice.
+
+As noted in @ej, the vast majority of public comments raising environmental justice concerns were mobilized by national environmental groups, not from frontline community groups. Likely because of this, mass comments raising EJ concerns also raise climate change. 82% of all comments raising EJ also mention climate change. However, unique (non-mass) comments show a different pattern: only 14% of unique comments that raise EJ also mention climate change. This difference reflects differences in capacities and interests between local EJ groups and national environmental organizations: national organizations have the resources and capacity to mobilize pressure campaigns while local EJ groups do not. National environmental groups are also much more likey to discuss climate change than local groups. 
+
+Table \@ref(tab:cj-orgs) shows the top mobilizers of public comments rasing climate justice issues (including "climate change" + "environmental justice"). Despite the small portion of comments mentioning climate change that these comments represent, nearly all of these organizations are the same as the top climate mobilizers seen in \@ref(tab:climate-orgs). The Center for Biological Diversity, which primarily focuses on endangered species is the organization most frequently raising EJ or CJ concerns. Indeed, a lage number of these comments are on draft rules on endangered species published by the Fish and Wildlife Service. While the ecological protections through Endangered Species Act listings often have disporate effects, these are not the policies typically highlighted by frontline environmental justice and climate justice communities. 
+
+```{r cj-orgs}
+load(here::here("data", "cj_orgs_summary.Rdata"))
+cj_orgs_summary %>% 
+  filter(Organization != "Individual") %>% 
+  arrange(-`Total Climate Justice Comments`) %>% 
+  kablebox() 
+```
+
+### Astroturf
+
+Astroturf campaigns mentioning climate change were rare. None of the top 50 organzations that mobilized comments on behalf of carbon-intensive industry, and only a few of the top 100 mobilizing organizations opposed climate policy. The largest campaign opposing climate policy to use the phrase "climate change"  was organized by Energy Citizens, a front group for the American Petrolium Institute. Energy Citizens mobilized only seven thousand comments, a relativly small number compared to campaigns sponsored by public interest groups (see @whymail for more on Energy Citizens adovocay tactics and why public interest campaings often mobilize more people). 
+
+The lack of astroturf in these data have at least two causes. First, groups opposing climate policy are less likely to use the "climate change" issue frame. Indeed, my research design aims to capture advocats of making policy with a climate change or climate justice frame, it is unlikely to capture campaings opposing climate policy. Second, astroturf campaings account for a very small portion of public comments in federal agency rulemaking [@whymail].
+
+
+## Comments on draft rules that did and did not address climate
+
+The stastical results in the following section leverage variation in whether final rules mention climate change or climate justice. Specifically, I select draft and final rule pairs where the draft rule did not address climate change (or climate justice) and compare cases where the final rule did or did not. Figures \@ref(fig:climate-comments) and \@ref(fig:cj-comments) show draft and final rule pairs over time, faceted by whether the Climate (or CJ) are addressed in the final but not the draft (the top row), in both the draft and the final (the middle row), or in neither the draft nor the final (the bottom row). The stastical anslyis compare cases in the top and bottom rows to assess whether groups raising Climate (or CJ) issues or the number of public comments makes agencies more likely to add responsive language to the final rule.  
+
+```{r climate-comments, out.width = "75%"}
+knitr::include_graphics(here::here("Figs/climate-comments-1.png"))
+```
+
+```{r cj-comments, out.width = "75%"}
+knitr::include_graphics(here::here("Figs/cj-comments-1.png"))
+```
+

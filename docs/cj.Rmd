@@ -1,12 +1,13 @@
 ---
 title: The Climate Movement's Impact on Technocratic Policymaking
-subtitle: 
+subtitle:
+anonymous: false
 author:
 - name: Devin Judge-Lord
   affiliation: Harvard University
-  footnote: "I will be grateful for any feedback on this early draft: [DevinJudgeLord@fas.harvard.edu](mailto:DevinJudgeLord@fas.harvard.edu). Slides and the most recent draft are available at <https://judgelord.github.io/research/cj>. This paper has benefited from funding from the National Science Foundation and American Political Science Association."
-  # Additional tables, figures, and replication code are available at <https://judgelord.github.io/dissertation/cj-appendix.html>. 
+  footnote: "I will be grateful for any feedback: [DevinJudgeLord@fas.harvard.edu](mailto:DevinJudgeLord@fas.harvard.edu). Slides and the most recent draft are available at <https://judgelord.github.io/research/cj>. This paper has benefited from funding from the National Science Foundation and American Political Science Association."
 date: "`r Sys.Date()`"
+warning: "NOTE: This short paper is the quantative portion of a paper that will eventually include hand-coded coalitions and lobbying success. The theory and methods are more fully developed in my dissertation chapters on [public pressure campaigns](https://judgelord.github.io/research/whymail) and the [environmental justice movement](https://judgelord.github.io/research/ej)." # Additional tables, figures, and replication code are available at <https://judgelord.github.io/cj/cj-appendix.html>.
 abstract: | 
   `r readLines(here::here("docs", "cj-abstract.text"))`
 bibliography: '`r here::here("assets/dissertation.bib")`'
@@ -40,6 +41,8 @@ header-includes:
 
 ```{r global.options, include=FALSE}
 source(here::here("code", "setup.R"))
+library(tidyverse)
+library(magrittr)
        
 options(knitr.graphics.auto_pdf = TRUE)
 
@@ -76,6 +79,15 @@ The following chapter is part of a dissertation exploring the effects of public 
 
 \setcounter{page}{1}
 
+
+```{r child = "01-cj-intro.Rmd"}
+```
+
+```{r child = "02-cj-theory.Rmd"}
+```
+
+```{r child = "03-cj-data.Rmd"}
+```
 
 ```{r child = "04-cj-results.Rmd"}
 ```

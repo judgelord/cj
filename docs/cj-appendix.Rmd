@@ -607,8 +607,11 @@ str_rm_all <- function(string, pattern) {
 
 cj_orgs <- cj_comments %>% 
   drop_na(organization) %>% 
-  filter(!organization %in% c("NA")) %>% 
-   mutate(org_name = organization %>% clean_orgs()) %>% 
+  filter(!organization %in% c("NA", "Individual", "individual")) %>% 
+   mutate(org_name = organization %>%
+            str_rm_all("Mass Comment Campaign Sponsored By ") %>%
+            clean_orgs() %>%
+            str_rm_all("Mass Comment Campaign Sponsored By ")) %>% 
   group_by(org_name) %>% 
   mutate(Dockets = docket_id %>% unique() %>% length()) %>% 
   group_by(org_name, Dockets) %>% 
