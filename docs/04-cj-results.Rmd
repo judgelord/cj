@@ -27,10 +27,10 @@ knitr::include_graphics(here::here("Figs", "cj-PR-winrate-agency-1.png"))
 ### Estimating *Whether* "Climate Change/Justice" is Added to Final Rule
 -->
 
-To account for differences across presidents, agencies, and the number of comments, I estimate logit regressions. For models 1 and 2 in Table \@ref(tab:cj-tables), the outcome is whether the agency added climate change to the final rule. The predictors are
-whether comments raised climate justice concerns, the number of unique (non-form letter) comments addressing climate justice, the total number of comments (including form letters), and the interaction between the total number of comments and whether any comments raised climate justice concerns. Models 3 and 4 are the same as models 1 and 2, except that the predictors relate to comments addressing climate justice, and the outcome is whether the policy text addressed climate justice. All models include fixed effects for the presidential administration and errors clustered by president. Models 2 and 4 also include fixed effects for each agency. Thus, estimates in Models 1 and 3 include variation *across* agencies, whereas estimates in models 2 and 4 only rely on variation *within* agencies. All estimates rely on variation *within* each presidential administration. 
-<!--The base equation for model 1 is shown below.-->
-All predicted probabilities shown below include agency fixed effects, models 2 and 4.
+To account for differences across presidents, agencies, and the number of comments, I estimate logit regressions. For Models 1 and 2 in Table \@ref(tab:cj-tables), the outcome is whether the agency added climate change to the final rule. The predictors are
+whether comments raised climate justice concerns, the number of unique (non-form letter) comments addressing climate justice, the total number of comments (including form letters), and the interaction between the total number of comments and whether any comments raised climate justice concerns. Models 3 and 4 are the same as Models 1 and 2, except that the predictors relate to comments addressing climate justice, and the outcome is whether the policy text addressed climate justice. All models include fixed effects for the presidential administration and errors clustered by president. Models 2 and 4 also include fixed effects for each agency. Thus, estimates in Models 1 and 3 include variation *across* agencies, whereas estimates in Models 2 and 4 only rely on variation *within* agencies. All estimates rely on variation *within* each presidential administration. 
+<!--The base equation for Model 1 is shown below.-->
+All predicted probabilities shown below include agency fixed effects (Models 2 and 4).
 
 ```{r cj-m-PR, cache=FALSE}
 source(here::here("code", "setup.R"))
@@ -47,9 +47,15 @@ modelsummary::modelsummary( models,
                             gof_omit = "R.*",
                             add_rows = rows,
                             coef_map = cm,
+                            label = 'tab:cj-tables',
+                            title = "Logit Regression",
                           notes = "") %>% 
   row_spec(row = 1, bold = T) %>%
-  kable2(file = "cj-tables") 
+   row_spec(row = 1, bold = T, hline_after = TRUE) %>% 
+      kable_styling(font_size = 9, 
+                    full_width = TRUE,
+                    latex_options = c("repeat_header")) # %>%  knit_latex()
+  #kable2(file = "cj-tables") 
 ```
 
 
@@ -79,7 +85,7 @@ The probability that an agency will add climate change or climate justice langua
 As the number of comments increases, the probability that a rule will add text addressing climate justice increases. <!--This supports the *Public Attention Hypothesis* (\@ref(hyp:cj-attention))---> Policy change is more likely when there is more public attention to a policy process. However, for both climate change and climate justice, the effect of public attention is limited to cases where commentors are not raising these concerns. Put differently, there is a negative interaction between the number of comments and climate justice comments---the more comments, the smaller the relationship between comments raising climate justice and agencies addressing climate justice in the rule. In the small portion (less than one percent) of highly salient rules with 1,000 or more comments, the presence of comments raising climate or climate justice concerns no longer has a statistically significant relationship with agencies adding climate justice to the text. With or without climate justice comments, these rules have about the same probability of change as those with just one climate justice comment, between 10 and 20 percent. <!--This is evidence against the *Public Pressure Hypothesis* (\@ref(hyp:cj-pressure)).---> The total number of comments (i.e., the scale of public attention) matters regardless of whether these comments explicitly raise climate justice concerns. However, as shown in Figure \@ref(fig:cj-comments), few rules with 10,000 or more comments do not have at least one comment mentioning climate justice, so we are highly uncertain about estimates of the impact of climate justice comments with high levels of public attention. We can be much more confident about the relationship between comments raising climate justice concerns and rule change at lower, more typical levels of public attention.
 
 The probability of
-"climate change" or "climate justice" appearing in the final rule also increases with the number of unique comments mentioning "climate change" or "climate justice" in models 2, 3, and 4. <!--Overall, this supports the *Repeated Claims Hypothesis* (\@ref(hyp:cj-repeated-claims)). -->
+"climate change" or "climate justice" appearing in the final rule also increases with the number of unique comments mentioning "climate change" or "climate justice" in Models 2, 3, and 4. <!--Overall, this supports the *Repeated Claims Hypothesis* (\@ref(hyp:cj-repeated-claims)). -->
 The more comments raising climate change or climate justice, the more likely policymakers are to engage with and use this language.
 
 
@@ -95,7 +101,7 @@ knitr::include_graphics(here::here("Figs", "cj-m-PR-comments-agencyFE-1.png"))
 
 Figure \@ref(fig:cj-m-PR-cj-comments-agencyFE) shows the probability that an agency will add climate justice language given the number of comments explicitly raising either climate change or climate justice. Controlling for the total number of comments (public attention or rule salience), more comments specifically raising climate change or climate justice concerns greatly increase the probability that a final rule will address climate change or climate justice. Given that many pressure campaigns mobilize over 1000 people, the difference between a rule with the modal number of comments (one) and one with a pressure campaign mobilizing 1000 people is an increase of 65% (from approximately 10 percent response rate with one comment to 75 percent with 1000 comments). 
 
-```{r cj-m-PR-cj-comments-agencyFE, fig.cap = "Probability That Climate Change/Justice is Added Between Draft and Final Rules by Number of Comments raising Climate or climate justice Concerns", out.width = "80%", fig.show = "hold"}
+```{r cj-m-PR-cj-comments-agencyFE, fig.cap = "Probability That Climate Change/Justice is Added Between Draft and Final Rules by Number of Comments Raising Climate or Climate Justice Concerns", out.width = "80%", fig.show = "hold"}
 
 knitr::include_graphics(here::here("Figs", "climate-m-PR-climatecomments-agencyFE-1.png"))
 

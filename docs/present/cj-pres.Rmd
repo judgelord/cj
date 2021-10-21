@@ -328,7 +328,6 @@ knitr::include_graphics("Figs/climate-m-PR-comments-agencyFE-1.png")
 
 ---
 
----
 
 ## Results: Adding Climate Justice issues to Policy
 
@@ -370,7 +369,7 @@ class: inverse
 
 - Rules related to Climate and EJ currently open for comment: [judgelord.github.io/rulemaking/open]( https://judgelord.github.io/rulemaking/open)
 
----
+--
 
 ### Next Steps
 

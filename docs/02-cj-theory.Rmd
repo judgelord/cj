@@ -73,7 +73,7 @@ Courts purportedly review policy decisions made through rulemaking with a partic
 ### Public Pressure as a Political Resource
 
 The chances that an agency will address climate science or distributive justice claims may be affected by other political factors, including the overall levels of public attention or public pressure. 
-As theorized in [@influence], the number of supporters may
+As theorized in @influence, the number of supporters may
 matter because it indicates support among relevant communities or the broader public. Again, instead of bolstering *scientific* claims themselves, perceived levels of public support bolster *political* reasons for including climate science in policy decisions. 
 An organization's ability to expand the scope of conflict by mobilizing
 a large number of people can be a valuable political resource [@Schattschneider1975]. 

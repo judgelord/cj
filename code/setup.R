@@ -86,6 +86,9 @@ kablebox <- . %>%
   kable_styling() %>% 
   scroll_box(height = "400px")
 
+options(modelsummary_html = 'kableExtra')
+
+
 # a function to format kables for different output formats 
 kable2 <- function(x, file){
   if(knitr:::is_html_output() | knitr::is_latex_output() ){
