@@ -223,7 +223,7 @@ knitr::include_graphics("figs/cj-data-agencies-2.png")
 ## Methods: Unique and duplicate comments
 
 
-```{r percent-match, fig.show = "hold", out.width = "57%", fig.cap="Example: Identifying Coalitions by the Percent of Matching Text in a Sample of Public Comments"}
+```{r percent-match, fig.show = "hold", out.width = "60%", fig.cap="Example: Identifying Coalitions by the Percent of Matching Text in a Sample of Public Comments"}
 
 knitr::include_graphics("figs/comment_percent_match_plot.png")
 ```
@@ -289,7 +289,7 @@ knitr::include_graphics("figs/cj-m-PR-president-median-1.png")
 
 ## Results: Adding Climate Change to Policy 
 
-```{r climate-m-PR-climatecomments-agencyFE,  out.width = "90%"}
+```{r climate-m-PR-climatecomments-agencyFE,  out.width = "80%"}
 
 
 knitr::include_graphics("figs/climate-m-PR-climatecomments-agencyFE-1.png")
@@ -303,10 +303,10 @@ knitr::include_graphics("figs/climate-m-PR-climatecomments-agencyFE-1.png")
 
 ## Results: Adding Climate Justice to Policy 
 
-```{r cj-m-PR-cjcomments-agencyFE,  out.width = "90%"}
+```{r cj-m-PR-cjcomments-agencyFE,  out.width = "80%"}
 
 
-knitr::include_graphics("figs/cj-m-PR-cjcomments-agencyFE-1.png")
+knitr::include_graphics("figs/cj-m-PR-cj-comments-agencyFE-1.png")
 
 ```
 
@@ -375,4 +375,6 @@ class: inverse
 
 - More on coalition structure and policy success, especially opposing coalitions
 - Better (hand-coded) measures of policy change
+- Model changes in texts in text that already discusses climate/EJ/CJ
+- Additional terms (e.g., "warming") and analysis of change in term frequency
 - Better estimation
