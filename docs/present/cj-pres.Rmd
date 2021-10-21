@@ -25,7 +25,7 @@ editor_options:
 knitr::opts_chunk$set(warning = FALSE, 
                       message = FALSE,
                       echo = FALSE, 
-                      #fig.path = "Figs/",
+                      #fig.path = "figs/",
                       cache = FALSE, 
                       fig.align = 'center',
                       fig.retina = 2,
@@ -195,14 +195,14 @@ Bernard, S., Samet, JM, Grambsch, A, Ebi,KL, and Romieu, I, The Potential Impact
 
 ```{r cj-data-agencies100, out.width = "90%"}
 
-knitr::include_graphics("Figs/cj-data-agencies100-2.png")
+knitr::include_graphics("figs/cj-data-agencies100-2.png")
 ```
 
 ---
 
 ```{r cj-data-agencies, out.width = "90%"}
 
-knitr::include_graphics("Figs/cj-data-agencies-2.png")
+knitr::include_graphics("figs/cj-data-agencies-2.png")
 ```
 
 ---
@@ -225,7 +225,7 @@ knitr::include_graphics("Figs/cj-data-agencies-2.png")
 
 ```{r percent-match, fig.show = "hold", out.width = "57%", fig.cap="Example: Identifying Coalitions by the Percent of Matching Text in a Sample of Public Comments"}
 
-knitr::include_graphics("Figs/comment_percent_match_plot.png")
+knitr::include_graphics("figs/comment_percent_match_plot.png")
 ```
 
 ---
@@ -234,7 +234,7 @@ knitr::include_graphics("Figs/comment_percent_match_plot.png")
 
 ```{r datasheet, fig.show = "hold", out.width = "100%", fig.cap="Example: Identifying Coalitions by Hand"}
 
-knitr::include_graphics("Figs/datasheet.png")
+knitr::include_graphics("figs/datasheet.png")
 ```
 
 ---
@@ -243,7 +243,7 @@ knitr::include_graphics("Figs/datasheet.png")
 
 ```{r climate-comments, out.width = "75%"}
 
-knitr::include_graphics("Figs/climate-comments-1.png")
+knitr::include_graphics("figs/climate-comments-1.png")
 ```
 
 ---
@@ -251,7 +251,7 @@ knitr::include_graphics("Figs/climate-comments-1.png")
 ## Methods: Comments on draft rules that did and did not address EJ/CJ
 
 ```{r cj-comments, out.width = "75%"}
-knitr::include_graphics("Figs/cj-comments-1.png")
+knitr::include_graphics("figs/cj-comments-1.png")
 ```
 
 
@@ -262,7 +262,7 @@ knitr::include_graphics("Figs/cj-comments-1.png")
 
 ```{r table,  out.width = "70%"}
 
-knitr::include_graphics("Figs/cj-table.png")
+knitr::include_graphics("figs/cj-table.png")
 ```
 
 ---
@@ -270,7 +270,7 @@ knitr::include_graphics("Figs/cj-table.png")
 ## Results: Adding Climate Change to Policy
 
 ```{r climate-m-PR-president-median-1, out.width = "60%"}
-knitr::include_graphics("Figs/climate-m-PR-president-median-1.png")
+knitr::include_graphics("figs/climate-m-PR-president-median-1.png")
 ```
 
 - 🔬 Scientific Information ✅  
@@ -280,7 +280,7 @@ knitr::include_graphics("Figs/climate-m-PR-president-median-1.png")
 ## Results: Adding Climate Justice to Policy
 
 ```{r cj-m-PR-president-median-1, out.width = "60%"}
-knitr::include_graphics("Figs/cj-m-PR-president-median-1.png")
+knitr::include_graphics("figs/cj-m-PR-president-median-1.png")
 ```
 
 - ✊🏿 Distributive Information ✅  
@@ -292,7 +292,7 @@ knitr::include_graphics("Figs/cj-m-PR-president-median-1.png")
 ```{r climate-m-PR-climatecomments-agencyFE,  out.width = "90%"}
 
 
-knitr::include_graphics("Figs/climate-m-PR-climatecomments-agencyFE-1.png")
+knitr::include_graphics("figs/climate-m-PR-climatecomments-agencyFE-1.png")
 
 ```
 
@@ -306,7 +306,7 @@ knitr::include_graphics("Figs/climate-m-PR-climatecomments-agencyFE-1.png")
 ```{r cj-m-PR-cjcomments-agencyFE,  out.width = "90%"}
 
 
-knitr::include_graphics("Figs/cj-m-PR-cjcomments-agencyFE-1.png")
+knitr::include_graphics("figs/cj-m-PR-cjcomments-agencyFE-1.png")
 
 ```
 
@@ -318,7 +318,7 @@ knitr::include_graphics("Figs/cj-m-PR-cjcomments-agencyFE-1.png")
 
 ```{r climate-m-PR-comments-agencyFE, out.width = "80%", fig.show = "hold"}
 
-knitr::include_graphics("Figs/climate-m-PR-comments-agencyFE-1.png")
+knitr::include_graphics("figs/climate-m-PR-comments-agencyFE-1.png")
 
 ```
 
@@ -333,7 +333,7 @@ knitr::include_graphics("Figs/climate-m-PR-comments-agencyFE-1.png")
 
 ```{r cj-m-PR-comments-agencyFE, out.width = "80%", fig.show = "hold"}
 
-knitr::include_graphics("Figs/cj-m-PR-comments-agencyFE-1.png")
+knitr::include_graphics("figs/cj-m-PR-comments-agencyFE-1.png")
 
 ```
 
