@@ -9,22 +9,26 @@ This dataset allows several types of analysis. First, I descriptively compare th
 
 ## Attention to climate change and climate justice across institutions and time
 
-Figure \@ref(fig:cj-data-agencies-2) shows the extent to which final rules published at various federal agencies addressed climate change, environmental justice, or both (i.e., climate justice).
+Figure \@ref(fig:cj-data-agencies) shows the extent to which final rules published at various federal agencies addressed climate change, environmental justice, or both (i.e., climate justice). As one of the few agencies with an office dedicated to environmental justice, the Environmental Protection Agency (EPA) has an exceptionally high rate of addressing environmental justice, but surprisingly few policies address climate change. In contrast, the Fish and Wildlife Service (FWS) has publishes an exceptionally large share of policies that mention climate change but almost never includes an analysis of environmental justice. Still the modal policy at both of these agencies mentions neither climate change nor environmental justice. Most other agencies that make significant volumes of policy rarely address either. 
+
+Surprisingly, Figure \@ref(fig:cj-data-agencies) does not show dramatic differences across presidential administrations. The Nuclear Regulatory Commission (NRC) apears to have completely ceased what little attention it did pay to climate and justice issues when Trump took office, but many other agencies continued a pattern of occassionally, but rarely attending to climate change and environmental justice. 
 
 
-```{r cj-data-agencies, out.width = "100%"}
+
+```{r cj-data-agencies, out.width = "100%", fig.cap="Final Agency Rules that Did and Did Not Address Climate Change and/or Climate Justice"}
 knitr::include_graphics(here::here("Figs/cj-data-agencies-2.png"))
 ```
 
-##Measuring Public Pressure and Political Information {#why-methods}
+
+
+## Measuring Coalitions, Public Pressure, and Political Information Using Text Reuse {#reuse} 
 
 In this section, I describe methods developed in @whymail to identify public pressure campaigns and measure the kinds of political information they create. These measures
-capture similar statistics to questions posed by @Verba1987 [p. 9]: "How
-much participation is there, what kind is it, and from what segments of society does it come?"
+capture similar statistics to questions posed by @Verba1987 [p. 9]: "How much participation is there, what kind is it, and from what segments of society does it come?"
 Specifically, I assess the extent to which public comments are mobilized by pressure campaigns, which organizations are behind these campaigns, and which campaigns are more successful in mobilizing.
 
 
-### Identifying Organizations and Coalitions using Text Reuse {#reuse}
+
 
 The primary unit of analysis is a lobbying coalition---a group of organizations advocating for the same policy changes in their comments on a draft rule. 
 Advocacy organizations work together on campaigns. For example, Save our Environment submitted both sophisticated comments and collected signatures from hundreds of thousands of people on several rulemaking dockets. Save our Environment is a small nonprofit with a simple WordPress website almost entirely dedicated to mobilizing public comments. It is run by The Partnership Project, a coalition of 20 of the largest environmental advocacy organizations in the United States, including the Sierra Club, Natural Resources Defense Council, Greenpeace, and the World Wildlife Fund, with the aim of "harnessing the power of the internet to increase public awareness and activism on today's most important environmental issues" [@Saveourenvironment]. Several Partnership Project members, including the Sierra Club, EarthJustice, and NRDC, also submitted technical comments and mobilized hundreds of thousands of their own supporters to comment separately on the same rules.  These lobbying and mobilizing activities are not independent campaigns. These organizations and the people they mobilize are a coalition.
@@ -79,7 +83,7 @@ load(here::here("data", "climateorgs_summary.Rdata"))
 
 climateorgs_summary %>% 
   arrange(-`Total Climate Comments`) %>% 
-  kable3() 
+  kable3(caption = "Organizations Mobilizing the Most Comments Raising Climate Change") 
 ```
 
 Public comments raising concerns about climate change rarely discuss environmental justice. Only 8% of all comments mentioning climate change (3,248,697) and less than 1% of unique comments mentioning climate change (2,138) also mention environmental justice or climate justice.
@@ -100,7 +104,7 @@ load(here::here("data", "cj_orgs_summary.Rdata"))
 cj_orgs_summary %>% 
   filter(Organization != "Individual") %>% 
   arrange(-`Total Climate Justice Comments`) %>% 
-  kable3() 
+  kable3(caption = "Organizations Mobilizing the Most Comments Raising Climate Justice Concerns") 
 ```
 
 ### Astroturf
@@ -114,11 +118,11 @@ The lack of astroturf in these data has at least two causes. First, groups oppos
 
 The statistical results in the following section leverage variation in whether final rules mention climate change or climate justice. Specifically, I select draft and final rule pairs where the draft rule did not address climate change (or climate justice) and compare cases where the final rule did or did not. Figures \@ref(fig:climate-comments) and \@ref(fig:cj-comments) show draft and final rule pairs over time, faceted by whether climate (or climate justice) is addressed in the final but not the draft (the top row), in both the draft and the final (the middle row), or in neither the draft nor the final (the bottom row). The statistical analyses compare cases in the top and bottom rows to assess whether groups raising climate (or climate justice) issues or the number of public comments makes agencies more likely to add responsive language to the final rule.  
 
-```{r climate-comments, out.width = "100%"}
+```{r climate-comments, out.width = "100%", fig.cap="Agency Rules that Did and Did Not Address Climate Change in Their Draft and Final Form"}
 knitr::include_graphics(here::here("Figs/climate-comments-1.png"))
 ```
 
-```{r cj-comments, out.width = "100%"}
+```{r cj-comments, out.width = "100%", fig.cap="Agency Rules that Did and Did Not Address Climate Justice in Their Draft and Final Form"}
 knitr::include_graphics(here::here("Figs/cj-comments-1.png"))
 ```
 

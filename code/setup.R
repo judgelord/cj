@@ -107,7 +107,7 @@ kable3 <- function(x,
                    height = '400px',
                    full_width = F,
                    align = 'l',
-                   font_size = 11,
+                   font_size = 10,
                    latex_options = "repeat_header"){
   if(knitr:::is_html_output()) {
     x %>% 

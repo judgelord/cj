@@ -19,7 +19,7 @@ editor_options:
 
 ```{r global.options, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
-                      cache = TRUE, 
+                      cache = FALSE, 
                       fig.width=8.5, 
                       split = T,
                       fig.align = 'center', 
@@ -124,7 +124,7 @@ cjFR %<>% clean_summary()
 rules %<>% filter(document_type %in% c("Proposed Rule", "Rule"),
                     # drop rules before clinton
                   !is.na(posted_date),
-                  posted_date > as.Date("1993-01-20"),
+                  posted_date > as.Date("2005-01-20"),
                   # drop rules before Bush II
                   # posted_date > as.Date("2005-01-20"),
                   # rulemaking dockets only

@@ -11,9 +11,8 @@ As @Hacker2021 observe,
 
 While scholars have made significant progress in studying the determinants and evolution of public opinion on climate change [@Mildenberger2015; @Boussalis2016], to study particular policy fights, organized groups are the key actors that shape policy proposals, mobilize support, and pressure policymakers.
 
-## Information as the Currency of Lobbying
 
-### Technical Information
+## Technical Information
 
 Dominant theories of bureaucratic policymaking focus on how agencies learn about policy problems and solutions [@Kerwin2011]. Leading formal models are information-based models where sophisticated lobbying groups affect policy by revealing information to the agency [@Gailmard2017;@Libgober2018], and empirical studies support the conclusion that information is the currency of lobbying in rulemaking [@Yackee2012;@Cook2017;@Gordon2018;@Walters2019].  
 
@@ -26,7 +25,7 @@ particular [@Seifter2016UCLA; @Crow2015; @Wagner2011; @West2009; @Yackee2006JOP;
 
 A second result is that bureaucratic policymakers tend to be most receptive to claims rooted in particular forms of science that fit with their professional training and institutional cultures. This means that some agencies are likely more receptive to climate science than others. It also means that claims about climate science and climate change as an issue frame may be more likely to be adopted than moral claims about who deserves government support and protection, like "climate justice" claims.
 
-### Political Information
+## Political Information
 
 Existing information-based theories of bureaucratic policymaking have little room for social movements and political pressure.
 While social movement organizations do engage in fights over technical reports and scientific studies, the information that activists provide is often more overtly political. 
@@ -40,7 +39,7 @@ to mobilizing public pressure as well:
 
 Mobilizing broader public support behind a call to account for climate science provides no additional technical information. It does, however, inform policymakers about the scale of public attention and mobilization. For groups that aim to convince policymakers to consider climate change, public pressure may be a political resource, potentially allowing groups to change policymakers' perceptions of their political environment and the political consequences of their decisions. 
 
-#### Information About a Policy's Disparate Effects
+### Information About a Policy's Disparate Effects
 
 Mobilizing new groups and people to comment on climate justice implications of policy may yield new information about a policy's disparate effects. Information about a policy's disparate effects is an additional form of political information.
 Like levels of public attention and pressure, the normative appeal of distributive justice claims can be a political resource, potentially affecting policymakers' perceptions of which policies achieve their mission. For example, climate justice claims may assert new groups deserving of protection. To the extent that these claims are persuasive in re-framing analysis about who policy should aim to protect, they may shift policymakers' perceptions of their desired policy.
@@ -71,7 +70,7 @@ Public comment periods are celebrated as "a crucial way to ensure that agency de
 Courts purportedly review policy decisions made through rulemaking with a particular eye toward whether they foster "fairness and deliberation" (*United States v. Mead Corp.*, 2001) and occasionally note the volume or diversity of participants in the public comment process (e.g., *Vermont Yankee v. NRDC*, 1978). While there is mixed empirical evidence about the importance of policy processes for judicial review, the number of public comments received on a draft policy is associated with courts letting the final agency policy stand [@judgelord2016MPSA]. Despite the dominance of business groups and seeming lack of success for public pressure campaigns in general, claims of distributive justice may have a unique role in bureaucratic policymaking. 
 
 
-#### Public Pressure as a Political Resource
+### Public Pressure as a Political Resource
 
 The chances that an agency will address climate science or distributive justice claims may be affected by other political factors, including the overall levels of public attention or public pressure. 
 As theorized in [@influence], the number of supporters may
