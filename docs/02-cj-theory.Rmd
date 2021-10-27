@@ -9,7 +9,7 @@ As @Hacker2021 observe,
 
 >"[The United States'] institutional terrain advantages political actors with the capacity to work across multiple venues, over extended periods, and in a political environment where coordinated government action is difficult, and strategies of evasion and exit from regulatory constraints are often successful. These capacities are characteristic of organized groups, not individual voters."
 
-While scholars have made significant progress in studying the determinants and evolution of public opinion on climate change [@Mildenberger2015; @Boussalis2016], to study particular policy fights, organized groups are the key actors that shape policy proposals, mobilize support, and pressure policymakers.
+While scholars have made significant progress in studying the determinants and evolution of public opinion on climate change, to study particular policy fights, organized groups are the key actors that shape policy proposals, mobilize support, and pressure policymakers.
 
 
 ## Technical Information
@@ -67,7 +67,7 @@ Thus, comments raising distributive concerns provide potentially influential pol
 
 This distributive information raises claims of distributive justice. 
 Public comment periods are celebrated as "a crucial way to ensure that agency decisions are legitimate, accountable, and just" [@Bierschbach2012, p. 20]. "Public participation can force agencies to rethink initial inclinations" [@Seifter2016UCLA, p. 1329]---such as which social groups are relevant or deserve special attention.
-Courts purportedly review policy decisions made through rulemaking with a particular eye toward whether they foster "fairness and deliberation" (*United States v. Mead Corp.*, 2001) and occasionally note the volume or diversity of participants in the public comment process (e.g., *Vermont Yankee v. NRDC*, 1978). While there is mixed empirical evidence about the importance of policy processes for judicial review, the number of public comments received on a draft policy is associated with courts letting the final agency policy stand [@judgelord2016MPSA]. Despite the dominance of business groups and seeming lack of success for public pressure campaigns in general, claims of distributive justice may have a unique role in bureaucratic policymaking. 
+Courts purportedly review policy decisions made through rulemaking with a particular eye toward whether they foster "fairness and deliberation" (*United States v. Mead Corp.*, 2001) and occasionally note the volume or diversity of participants in the public comment process (e.g., *Vermont Yankee v. NRDC*, 1978). While there is mixed empirical evidence about the importance of policy processes for judicial review, the number of public comments received on a draft policy is associated with courts letting the final agency policy stand [@judgelord2016MPSA]. Thus, despite the dominance of business groups, claims of distributive justice may have a unique role in bureaucratic policymaking. 
 
 
 ### Public Pressure as a Political Resource
