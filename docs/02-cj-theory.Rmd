@@ -4,17 +4,26 @@ My analysis of the politics of climate policymaking focuses on organized groups 
 
 ## Interest Groups
 
-Organized groups are the key actors in American politics, especially technocratic policymaking.
-As @Hacker2021 observe,
+Organized groups are the key actors in American politics [@Hacker2021], especially technocratic policymaking [@whymail].
+Organized groups are the key actors that shape policy proposals, mobilize support, and pressure policymakers.
 
+
+<!--
 >"[The United States'] institutional terrain advantages political actors with the capacity to work across multiple venues, over extended periods, and in a political environment where coordinated government action is difficult, and strategies of evasion and exit from regulatory constraints are often successful. These capacities are characteristic of organized groups, not individual voters."
 
-While scholars have made significant progress in studying the determinants and evolution of public opinion on climate change, to study particular policy fights, organized groups are the key actors that shape policy proposals, mobilize support, and pressure policymakers.
+
+While scholars have made significant progress in studying the determinants and evolution of public opinion on climate change, -->
+ 
+
+While climate politics is inconsistently framed as distributive politics, most policies that deal with climate change create winners and losers. Distributive conflicts are thus a core feature of climate politics and policymaking [@Aklin2020: @Colgan2021]. Policy outcomes depend on the relative power of different groups to secure government protection or assistance with dramatic shifts in modes of production. 
+
+The most influential lobbying coalitions often advance the interests of individuals and organizations that profit from current systems of production and reinvest those profits in maintaining the systems. In the context of climate change, this means that fossil fuel companies are some of the most active groups in shaping government policy [@Brulle2018; @Mildenberger2020; @Stokes2020]. 
+Environmetnal groups and groups representing those most affected by climate change are also increasingly active in climate politics [@Caniglia2015], but they lack comparable financial resources and must draw on very different advocacy resources. In the following subsections, I argue that the value bureaucratic policymaking places on technical information advantages groups with more financial resources, but that groups may also affect policy by introducing persuasive moral claims and signals of political support. 
 
 
 ## Technical Information
 
-Dominant theories of bureaucratic policymaking focus on how agencies learn about policy problems and solutions [@Kerwin2011]. Leading formal models are information-based models where sophisticated lobbying groups affect policy by revealing information to the agency [@Gailmard2017;@Libgober2018], and empirical studies support the conclusion that information is the currency of lobbying in rulemaking [@Yackee2012;@Cook2017;@Gordon2018;@Walters2019].  
+Dominant theories of bureaucratic policymaking focus on how agencies learn about policy problems and solutions [@Kerwin2011]. Leading formal models are information-based models where sophisticated lobbying groups affect policy by revealing information to the agency [@Gailmard2017;@Libgober2018], and empirical studies support the conclusion that information is the currency of lobbying in rulemaking [@Yackee2012; @Cook2017; @Gordon2018; @Walters2019].  
 
 Agency rulemaking is an especially technocratic and legalistic form of policymaking that explicitly privileges scientific and legal facts as the appropriate basis for decisions.  Procedural requirements to consider relevant information create incentives for lobbying groups to overwhelm agencies with complex technical information, making rulemaking obscure to all but the most well-informed insiders [@Wagner2010]. <!--Empirical work shows Yackee -->
 Influence in rulemaking generally requires resources and technical expertise [@Yackee2019].
@@ -33,9 +42,7 @@ While social movement organizations do engage in fights over technical reports a
 identify political information as a potentially influential result of
 groups expanding their lobbying coalition. While they focus on
 mobilizing experts, they describe a dynamic that can be extended
-to mobilizing public pressure as well:
-
-> coalition lobbying can generate new information and new actors---beyond simply the 'usual suspects' ---relevant to policy decisionmakers. (p. 343)
+to mobilizing public pressure as well: "Coalition lobbying can generate new information and new actors---beyond simply the 'usual suspects' ---relevant to policy decisionmakers." (p. 343)
 
 Mobilizing broader public support behind a call to account for climate science provides no additional technical information. It does, however, inform policymakers about the scale of public attention and mobilization. Research shows that regulators draw more heavily on scientific research when there is more attention from outside actors [@Costa2015]. For groups that aim to convince policymakers to consider climate change, public pressure may be a political resource, potentially allowing groups to change policymakers' perceptions of their political environment and the political consequences of their decisions. 
 
@@ -74,7 +81,8 @@ Courts purportedly review policy decisions made through rulemaking with a partic
 
 The chances that an agency will address climate science or distributive justice claims may be affected by other political factors, including the overall levels of public attention or public pressure. 
 As theorized in @influence, the number of supporters may
-matter because it indicates support among relevant communities or the broader public. Again, instead of bolstering *scientific* claims themselves, perceived levels of public support bolster *political* reasons for including climate science in policy decisions. 
+matter because it indicates support among relevant communities or the broader public. In surveys, voters in the US generally support more aggressive government action to address climate change [@Ansolabehere2014].<!--Leiserowitz 2006, Shwom et al. 2010, Smith & Leiserowitz 2014-->
+Again, instead of bolstering *scientific* claims themselves, perceived levels of public support bolster *political* reasons for including climate science in policy decisions. 
 An organization's ability to expand the scope of conflict by mobilizing
 a large number of people can be a valuable political resource [@Schattschneider1975]. 
 
