@@ -154,7 +154,9 @@ Institutions are more **receptive** to technical and political claims when they 
 
 ## Example: EPA responds to comments 
 
-2013 Obama EPA proposed rule: *Air Quality State Implementation Plans; Approvals and Promulgations: Navajo Nation; Regional Haze Requirements for Navajo Generating Station* mentions neither climate change nor environmental justice.
+2013 Obama EPA proposed rule: *Air Quality State Implementation Plans; Approvals and Promulgations: Navajo Nation; Regional Haze Requirements for Navajo Generating Station* 
+
+- No mention of climate change, one paragraph on environmental justice.
 
 In response to 421 comments raising climate justice concerns, the final rule added nine paragraphs on environmental justice and a brief mention of climate change: 
 
