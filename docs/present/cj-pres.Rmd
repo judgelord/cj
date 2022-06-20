@@ -1,8 +1,8 @@
 ---
-title: "The Climate Movement's Impact on Technocratic Policymaking in U.S. Federal Agencies"
-subtitle: ""
+title: "Making Policy About Climate"
+subtitle: "The Climate Movement's Impact on Agency Rulemaking"
 author: "Devin Judge-Lord <br>  Harvard University"
-date: "Paper, slides, & data: [judgelord.github.io/research/cj](https://judgelord.github.io/research/cj)"
+date: "Paper, slides, & data: judgelord.github.io/research/cj"
 urlcolor: cyan
 output:
   xaringan::moon_reader:
@@ -44,7 +44,7 @@ style_mono_light(base_color = "#3b444b",
           background_color = "#FAF0E6", # linen
           header_font_google = google_font("Open Sans"), 
           text_font_google = google_font("Roboto"), 
-          text_font_size = "32px",
+          text_font_size = "30px",
           #padding = "20px",
           code_font_google = google_font("Inconsolata"), 
           code_inline_background_color    = "#F5F5F5", 
@@ -56,6 +56,71 @@ style_mono_light(base_color = "#3b444b",
 
 ```
 
+class: inverse center
+
+# The Broader Project: Public Pressure
+
+
+Mobilization
+
+
+(grassroots, astroturf, elected officials)
+
+↓
+
+Getting policymakers' attention and framing policy debates
+
+↓
+
+Substantive policy influence
+
+↓
+
+Surviving judicial review
+
+???
+Hi, my name is Devin Judge-Lord; I'm a postdoc at Harvard Univ.
+But today I am zooming in from down the coast on the homeland of the Lenape poeple.
+I am so grateful to be able to share this with you.
+- My work is at the intersection of two literatures that have not had much contact...On the one hand, social movements and civic engagement have long been a core interest of political scientists. We are highly uncertain about the size of effects from actions like letter writing, signing petitions, and protests, but there is little doubt that these things matter at a large enough scale.
+- On the other hand, bureaucratic policy processes like agency rulemaking are often discussed as if they operate with a technocratic rationality. In a sense, mass politics is missing from a lot of the administrative law literature and even from political science theories and formal models of bureaucratic policymaking. 
+- The paper I am presenting today is a small part of a larger book project: 
+---
+
+class: inverse center
+
+# The Broader Project: Public Pressure
+
+
+Mobilization
+
+
+(grassroots, astroturf, elected officials)
+
+↓
+
+<mark>Getting policymakers' attention and framing policy debates</mark>
+
+↓
+
+Substantive policy influence
+
+↓
+
+Surviving judicial review
+
+
+???
+
+It is a middle step in the causal chain from mobilization to substantive policy influence. 
+
+I need enough about mobilization to be clear about who is empowered.
+
+I need enough on substantive policy influence to be honest about the limited power of framing and discourse effects in any one policy fight. 
+But, this paper is really about the aggregate effects of many linked campaigns on the discourse and issue frames in the policy process---that is, how a movement affects policymaking 
+across institutions and over time.
+
+---
 
 # Motivation 
 
@@ -142,6 +207,47 @@ Democracy For America	1	1	4426
 Center For Biological Diversity	30	33	150
 
 ---
+
+## Preview of Findings 
+
+Public pressure affects policy debates.
+
+???
+Today, I'm going to show that public pressure can affect the policy process, but with a lot of caveats. And the caveats are often the most interesting part. 
+The first caveat is that baseline rates of addressing EJ are very low from the Clinton through the Trump administrations. 
+
+There is a lot of potential for change, which is a tough road for the movement, but helpful for the scientist trying to measure change.
+--
+
+- Policymakers rarely addresses Climate & EJ concerns (across administrations)
+--
+, but they are much more likely to address Climate & EJ when pressured
+--
+, especially **receptive policymakers** who have **not already taken a position**.
+
+???
+- With larger EJ coalitions and more public attention, agencies are more likely  📈 to **add** EJ language **where there was none**
+- BUT agencies also anticipate public attention, making **existing** EJ analyses less likely 📉 to **change** on higher-salience rules.
+
+???
+The second caveat is that pressure matters to receptive policymakers--policymakers who are used to thinking about ej at institutions with organizational processes for addressing EJ. 
+
+Third is that the scale of public attention makes policymakers more likely to address EJ when they did not, but higher-salience policies that already addressed EJ are less likely to change. I suspect this is because agency officials have already dotted their i's and crossed their t's in these cases, and there is little room left for policy to move. 
+
+--
+
+HOWEVER, groups raising climate change are usually "big green" (White) advocacy organizations.  
+--
+
+- Big greens are much more likely to have their substantive policy demands met than tribes or frontline EJ groups.
+
+???
+
+Finally, assessing the normative implications requires us to understand who is advocating for whom. In the case of comments on federal agency rules, it is "big green" national advocacy groups that have historically led a very White environmental movement. 
+These "big greens" are more likely to get substantive policy demands met than Tribes and frontline community groups. So, a lot hinges on the extent to which these national organizations represent EJ communities.
+
+---
+
 
 # Theory
 
